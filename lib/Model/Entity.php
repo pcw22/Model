@@ -180,8 +180,9 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     {
         $array = array();
         foreach ($this as $k => $v) {
-            
+            $array[$k] = $v;
         }
+        return $array;
     }
     
     private function _getMethodNameFor($type, $name)
