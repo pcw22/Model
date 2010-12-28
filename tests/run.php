@@ -3,34 +3,26 @@
 require dirname(__FILE__) . '/../lib/Model/Autoloader.php';
 require dirname(__FILE__) . '/../lib/Testes/Autoloader.php';
 Model_Autoloader::register();
-Testes_Autoloader::register();
+Testes_Autoloader::register(dirname(__FILE__) . '/../lib');
 
-$test = new Testes_Suite(dirname(__FILE__) . '/../lib/Model/Test', 'Model_Test');
-$test->run();
+$tests = new Test_Model;
+$tests->run();
 
-// output passed tests
-echo count($test->passed()) . " passed\n";
-
-// output incomplete tests if they exist
-if ($count = count($test->incomplete())) {
-    echo "{$count} incomplete\n";
-    foreach ($test->incomplete() as $failed) {
-        echo "  {$failed}\n";
+if ($assertions = $tests->assertions()) {
+    echo "Tests failed:\n";
+    foreach ($assertions as $assertion) {
+        echo '  '
+           , $assertion->getTestFile()
+           , '('
+           , $assertion->getTestLine()
+           , '): '
+           , $assertion->getMessage()
+           , '. In: '
+           , $assertion->getTestClass()
+           , '->'
+           , $assertion->getTestMethod()
+           , "\n";
     }
-}
-
-// output failed tests if they exist
-if ($count = count($test->failed())) {
-    echo "{$count} failed\n";
-    foreach ($test->failed() as $incomplete) {
-        echo "  {$incomplete}\n";
-    }
-}
-
-// output the total number of tests run
-if ($test->count() === 1) {
-    echo '1 test';
 } else {
-    echo "{$test->count()} tests";
+    echo "Tests passed!\n";
 }
-echo " in total\n";

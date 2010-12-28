@@ -1,18 +1,14 @@
 <?php
 
+/**
+ * The base exception class.
+ * 
+ * @category UnitTesting
+ * @package  Testes
+ * @author   Trey Shugart <treshugart@gmail.com>
+ * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ */
 class Testes_Exception extends Exception
 {
-    /**
-     * Thrown when an invalid test class is passed to a suite.
-     * 
-     * @var int
-     */
-    const INVALID_TEST_CLASS = 1;
     
-    /**
-     * Thrown when an invalid test method is passed to a test.
-     * 
-     * @var int
-     */
-    const INVALID_TEST_METHOD = 2;
 }

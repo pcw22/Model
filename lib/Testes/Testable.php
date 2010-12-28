@@ -1,144 +1,40 @@
 <?php
 
 /**
- * Interface for determining if a test or test group is testable.
+ * Interface for all suites and tests must implement.
  * 
  * @category UnitTesting
  * @package  Testes
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  (c) 2010 Trey Shugart http://europaphp.org/license
  */
-abstract class Testes_Testable implements Iterator, Countable
+interface Testes_Testable
 {
-    /**
-     * Contains all test names that passed.
-     * 
-     * @var array
-     */
-    private $_passed = array();
-    
-    /**
-     * Contains all test names that are incomplete.
-     * 
-     * @var array
-     */
-    private $_incomplete = array();
-    
-    /**
-     * Contains all test names that failed.
-     * 
-     * @var array
-     */
-    private $_failed = array();
-    
-    /**
-     * Contains the tests to be run.
-     * 
-     * @var array
-     */
-    private $_tests = array();
-    
     /**
      * Runs all tests.
      * 
      * @return Testes_Testable
      */
-    abstract public function run();
+    public function run();
     
     /**
-     * Returns the name of the current test or test group.
+     * Sets up the test.
      * 
-     * @return string
+     * @return void
      */
-    public function __toString()
-    {
-        return get_class($this);
-    }
+    public function setUp();
     
-    public function setUp()
-    {
-        
-    }
+    /**
+     * Tears the test down.
+     * 
+     * @return void
+     */
+    public function tearDown();
     
-    public function tearDown()
-    {
-        
-    }
-    
-    public function current()
-    {
-        return current($this->_tests);
-    }
-    
-    public function key()
-    {
-        return key($this->_tests);
-    }
-    
-    public function next()
-    {
-        next($this->_tests);
-    }
-    
-    public function rewind()
-    {
-        reset($this->_tests);
-    }
-    
-    public function valid()
-    {
-        return is_numeric($this->key());
-    }
-        
-    public function count()
-    {
-        return count($this->_passed)
-             + count($this->_incomplete)
-             + count($this->_failed);
-    }
-    
-    public function passed()
-    {
-        return $this->_passed;
-    }
-    
-    public function incomplete()
-    {
-        return $this->_incomplete;
-    }
-    
-    public function failed()
-    {
-        return $this->_failed;
-    }
-    
-    protected function addPassed($tests)
-    {
-        foreach ((array) $tests as $test) {
-            $this->_passed[] = $test;
-        }
-        return $this;
-    }
-    
-    protected function addIncomplete($tests)
-    {
-        foreach ((array) $tests as $test) {
-            $this->_incomplete[] = $test;
-        }
-        return $this;
-    }
-    
-    protected function addFailed($tests)
-    {
-        foreach ((array) $tests as $test) {
-            $this->_incomplete[] = $test;
-        }
-        return $this;
-    }
-    
-    protected function addTest($test)
-    {
-        $this->_tests[] = $test;
-        return $this;
-    }
+    /**
+     * Returns the failed assertions.
+     * 
+     * @return array
+     */
+    public function assertions();
 }

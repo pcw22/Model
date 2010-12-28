@@ -6,7 +6,7 @@ class Test_Model extends Testes_Test
     {
         Model::setDefaultConfig(
             array(
-                'adapter' => 'Mysql',
+                'adapter' => 'Mock',
                 'format'  => ':name_:adapter'
             )
         );
@@ -16,8 +16,8 @@ class Test_Model extends Testes_Test
     
     public function testInstanceSetting()
     {
-        return Model::hasInstance('default')
-            && Model::hasInstance('custom');
+        $this->assert(Model::hasInstance('default'), 'The model does not have a default instance.');
+        $this->assert(Model::hasInstance('custom'), 'The model does not have a custom instance.');
     }
     
     public function testDefaultInstance()
@@ -31,8 +31,8 @@ class Test_Model extends Testes_Test
         // and reset it
         Model::setDefaultInstance('default');
         
-        // then test it
-        return $hasDefault;
+        // assert
+        $this->assert($hasDefault, 'Could not change the default instance to another instance.');
     }
     
     public function testInstanceClearing()
@@ -46,14 +46,22 @@ class Test_Model extends Testes_Test
         // and re-check
         $hasAfter = Model::hasInstance('custom');
         
-        // check before and after
-        return $hasBefore && !$hasAfter;
+        // make sure it existed before and it doesn't exist after
+        $this->assert($hasBefore, 'There was no custom instance to begin with.');
+        $this->assert(!$hasAfter, 'The custom instance could not be cleared.');
     }
     
     public function testAdapterGetting()
     {
-        return Model::getInstance()->content instanceof Content_Mysql
-            && Model::getInstance()->get('content') instanceof Content_Mysql;
+        $this->assert(
+            Model::getInstance()->content instanceof Content_Mock,
+            'The content adapter is the incorrect instance when using "__get()".'
+        );
+        
+        $this->assert(
+            Model::getInstance()->get('content') instanceof Content_Mock,
+            'The content adapter is the incorrect instance when using "get()".'
+        );
     }
 }
 
