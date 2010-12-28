@@ -92,7 +92,9 @@ abstract class Testes_Testable implements Iterator, Countable
         
     public function count()
     {
-        return count($this->_tests);
+        return count($this->_passed)
+             + count($this->_incomplete)
+             + count($this->_failed);
     }
     
     public function passed()

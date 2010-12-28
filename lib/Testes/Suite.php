@@ -16,7 +16,7 @@ class Testes_Suite extends Testes_Testable
      * 
      * @return Testes_Suite
      */
-    final public function __construct($path, $prefix)
+    public function __construct($path, $prefix)
     {
         $realpath = realpath($path);
         if (!$realpath) {
@@ -26,20 +26,25 @@ class Testes_Suite extends Testes_Testable
                 . '" is not a valid path.'
             );
         }
-        foreach (new DirectoryIterator($path) as $file) {
-            if ($file->isDir()) {
+        foreach (new DirectoryIterator($realpath) as $file) {
+            if ($file->isDot()) {
                 continue;
             }
             
-            // include the file once
-            include_once $file->getPathname();
+            $prefix = $prefix . substr($file->getPath(), strlen($realpath));
+            $prefix = str_replace(array('/', '\\'), '_', $prefix);
+            $prefix = $prefix . '_';
             
-            $class = str_replace('.php', '', $file->getBasename());
-            $class = $prefix . '_' . $class;
-            if ($this->isTestSuite($class)) {
-                $this->addTest(new $class($file->getPath(), $class));
-            } elseif ($this->isTest($class)) {
-                $this->addTest(new $class);
+            if ($file->isDir()) {
+                $class = new Testes_Suite($file->getPath(), $prefix);
+                $this->addTest($class);
+            } else {
+                include_once $file->getPathname();
+                $class = $prefix . str_replace('.php', '', $file->getBasename());
+                $class = new $class;
+                if ($this->isTest($class)) {
+                    $this->addTest($class);
+                }
             }
         }
     }

@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * The cache driver interface.
+ * 
+ * @category Cache
+ * @package  Model
+ * @author   Trey Shugart <treshugart@gmail.com>
+ * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ */
 interface Model_CacheInterface
 {
     /**

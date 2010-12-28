@@ -1,7 +1,20 @@
 <?php
 
+/**
+ * The Memcache driver.
+ * 
+ * @category Cache
+ * @package  Model
+ * @author   Trey Shugart <treshugart@gmail.com>
+ * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ */
 class Model_Cache_Memcache extends Model_CacheAbstract
 {
+    /**
+     * The default Memcache configuration.
+     * 
+     * @var array
+     */
     protected $config = array(
         'servers' => array(
             array(
@@ -11,8 +24,20 @@ class Model_Cache_Memcache extends Model_CacheAbstract
         )
     );
     
+    /**
+     * The memcache instance to use.
+     * 
+     * @var Memcache
+     */
     protected $memcache;
     
+    /**
+     * Constructs a new memcache cache driver and sets its configuration.
+     * 
+     * @param array $config The Memcache configuration.
+     * 
+     * @return Model_Cache_Memcache
+     */
     public function __construct(array $config = array())
     {
         $this->config   = array_merge($this->config, $config);
@@ -22,11 +47,27 @@ class Model_Cache_Memcache extends Model_CacheAbstract
         }
     }
     
+    /**
+     * Sets an item in the cache.
+     * 
+     * @param string $key   The cache key.
+     * @param mixed  $value The cache value.
+     * 
+     * @return Model_Cache_Memcache
+     */
     public function set($key, $value)
     {
-        return $this->memcache->add($key, $value);
+        $this->memcache->add($key, $value);
+        return $this;
     }
     
+    /**
+     * Returns an item from the cache.
+     * 
+     * @param string $key The cache key.
+     * 
+     * @return mixed
+     */
     public function get($key)
     {
         return $this->memcache->get($key);
