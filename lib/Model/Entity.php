@@ -11,6 +11,26 @@
 abstract class Model_Entity implements ArrayAccess, Countable, Iterator
 {
     /**
+     * The "id" field name. This is used as the main identifying column in the entity.
+     * 
+     * To use a different column name, use:
+     * 
+     * <code>
+     *     $entity->alias(Model_Entity:ID, 'myCustomId');
+     * </code>
+     * 
+     * @var string
+     */
+    const ID = 'id';
+    
+    /**
+     * Aliases for fields.
+     * 
+     * @var array
+     */
+    protected $aliases = array();
+    
+    /**
      * The data in the entity.
      * 
      * @var array
@@ -49,7 +69,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     {
         if (is_array($vals) || is_object($vals)) {
             foreach ($vals as $k => $v) {
-                $this->set($k, $v);
+                $this->__set($k, $v);
             }
         }
     }
@@ -118,6 +138,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function __set($name, $value)
     {
+        $name = $this->unalias($name);
         if ($method = $this->_getMethodNameFor('set', $name)) {
             return $this->$method($value);
         }
@@ -134,10 +155,11 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function &__get($name)
     {
+        $name = $this->unalias($name);
         if ($method = $this->_getMethodNameFor('get', $name)) {
             return $this->$method($value);
         }
-        if ($this->_isset($name)) {
+        if ($this->__isset($name)) {
             return $this->data[$name];
         }
         return null;
@@ -150,7 +172,8 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function __isset($name)
     {
-        if ($method = $this->_getMethodNameFor('has', $name)) {
+        $name = $this->unalias($name);
+        if ($method = $this->_getMethodNameFor('isset', $name)) {
             return $this->$method($value);
         }
         return isset($this->data[$name]);
@@ -165,7 +188,8 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function __unset($name)
     {
-        if ($method = $this->_getMethodNameFor('clear', $name)) {
+        $name = $this->unalias($name);
+        if ($method = $this->_getMethodNameFor('unset', $name)) {
             return $this->$method($value);
         }
         if ($this->_isset($name)) {
@@ -297,6 +321,35 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
             $array[$k] = $v;
         }
         return $array;
+    }
+    
+    /**
+     * Aliases the field with the specified alias.
+     * 
+     * @param string $field The field to alias.
+     * @param string $alias The alias to use.
+     * 
+     * @return Model_Entity
+     */
+    public function alias($field, $alias)
+    {
+        $this->aliases[$alias] = $field;
+        return $this;
+    }
+    
+    /**
+     * Returns the real name of the specified alias.
+     * 
+     * @param string $alias The alias to get the real name for.
+     * 
+     * @return string
+     */
+    public function unalias($alias)
+    {
+        if (isset($this->aliases[$alias])) {
+            return $this->aliases[$alias];
+        }
+        return $alias;
     }
     
     /**

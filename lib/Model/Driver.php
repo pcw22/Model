@@ -25,6 +25,15 @@ abstract class Model_Driver
     protected $strategy = null;
     
     /**
+     * Returns the specified entity by its id.
+     * 
+     * @param mixed $id The id to find the entity by.
+     * 
+     * @return mixed
+     */
+    abstract public function findById($id);
+    
+    /**
      * Saves the passed in entity.
      * 
      * @param Model_Entity $entity The model entity to save.
@@ -55,19 +64,37 @@ abstract class Model_Driver
             );
         }
         
-        // generate a cache key for storing and retrieving
-        $key = $this->generateCacheKey(get_class($this), $name, $args);
+        // generate a cache key for storing and retrieving id sets
+        $key = md5(get_class($this) . $name . serialize($args));
         
-        // attempt to retrieve the value from the cache using the key
-        if ($value = $this->_fromCache($key)) {
-            return $value;
+        // attempt to retrieve the cached ids and load them
+        if ($this->cache) {
+            if ($ids = $this->cache->get('ids' . $key)) {
+                return $this->_findByIds($ids);
+            } elseif ($result = $this->cache->get('result' . $key)) {
+                return $result;
+            }
         }
         
         // otherwise, get the result from the method
         $value = call_user_func_array(array($this, $name), $args);
         
         // attempt to cache the value using the key
-        $this->_toCache($key, $value);
+        if ($this->cache) {
+            if ($value instanceof Model_Entity) {
+                $this->cache->set(get_class($this) . $value->__get(Model_Entity::ID));
+            } elseif ($value instanceof Model_EntitySet) {
+                // cache the id array
+                $this->cache->set('ids' . $key, $value->aggregate(Model_Entity::ID));
+                
+                // now cache each value
+                foreach ($value as $entity) {
+                    $this->cache->set(get_class($this) . $entity->__get(Model_Entity::ID));
+                }
+            } else {
+                $this->cache->set('result' . $key, $value);
+            }
+        }
         
         // pass on the result
         return $value;
@@ -80,100 +107,30 @@ abstract class Model_Driver
      * 
      * @return Model_Driver
      */
-    public function setCacheDriver(Model_Cache_DriverInterface $driver = null)
+    public function setCache(Model_Cache_DriverInterface $driver = null)
     {
         $this->cache = $driver;
         return $this;
     }
     
     /**
-     * Sets the cache strategy to use.
+     * Finds the items by their id.
      * 
-     * @param Model_Cache_StrategyInterface $strategy The strategy to handle the cache.
+     * @param array $ids The ids to find.
      * 
-     * @return Model_Driver
+     * @return Model_EntitySet
      */
-    public function setCacheStrategy(Model_Cache_StrategyInterface $strategy = null)
+    private function _findByIds(array $ids)
     {
-        $this->strategy = $strategy;
-        return $this;
-    }
-    
-    /**
-     * Generates a cache key based on the parameters passed.
-     * 
-     * @param string $model  The model classname.
-     * @param string $method The method name.
-     * @param array  $params The parameters passed to the method.
-     * 
-     * @return string
-     */
-    protected function generateCacheKey($model, $method, array $params = array())
-    {
-        return md5($model . '->' . $method . serialize($params));
-    }
-    
-    /**
-     * Returns the specified item from cache.
-     * 
-     * @param string $key The item key.
-     * 
-     * @return mixed
-     */
-    private function _fromCache($key)
-    {
-        if ($this->cache) {
-            if ($value = $this->cache->get($key)) {
-                return $this->_decode($value);
+        $set = new Model_EntitySet(get_class($this));
+        foreach ($ids as $id) {
+            $key = get_class($this) . $id;
+            if ($entity = $this->_fromCache($key)) {
+                $set[] = $entity;
+            } elseif ($entity) {
+                $set[] = $this->findById($id);
             }
         }
-        return null;
-    }
-    
-    /**
-     * Puts the item in cache using the specified key.
-     * 
-     * @param string $key   The item key.
-     * @param mixed  $value The value to store.
-     * 
-     * @return Model_Driver
-     */
-    private function _toCache($key, $value)
-    {
-        if ($this->cache) {
-            $value = $this->_encode($value);
-            $this->cache->set($key, $value);
-        }
-        return $this;
-    }
-    
-    /**
-     * Encodes the specified value using the specified strategy.
-     * 
-     * @param mixed $value The value to encode.
-     * 
-     * @return string
-     */
-    private function _encode($value)
-    {
-        if ($this->strategy instanceof Model_Cache_StrategyInterface) {
-            $value = $this->strategy->encode($value);
-        }
-        return $value;
-    }
-    
-    /**
-     * Decodes the specified value using the specified strategy.
-     * 
-     * @param string $value The value to decode.
-     * 
-     * @return mixed
-     */
-    private function _decode($value)
-    {
-        if ($this->strategy instanceof Model_Cache_StrategyInterface) {
-            $value = $this->strategy->decode($value);
-        }
-        return $value;
+        return $set;
     }
 }
