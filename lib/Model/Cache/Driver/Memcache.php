@@ -8,7 +8,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-class Model_Cache_Memcache extends Model_CacheAbstract
+class Model_Cache_Driver_Memcache implements Model_Cache_DriverInterface
 {
     /**
      * The default Memcache configuration.
@@ -36,7 +36,7 @@ class Model_Cache_Memcache extends Model_CacheAbstract
      * 
      * @param array $config The Memcache configuration.
      * 
-     * @return Model_Cache_Memcache
+     * @return Model_Cache_Driver_Memcache
      */
     public function __construct(array $config = array())
     {
@@ -53,7 +53,7 @@ class Model_Cache_Memcache extends Model_CacheAbstract
      * @param string $key   The cache key.
      * @param mixed  $value The cache value.
      * 
-     * @return Model_Cache_Memcache
+     * @return Model_Cache_Driver_Memcache
      */
     public function set($key, $value)
     {

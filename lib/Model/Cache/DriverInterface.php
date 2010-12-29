@@ -8,7 +8,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-interface Model_CacheInterface
+interface Model_Cache_DriverInterface
 {
     /**
      * Returns a cached item.

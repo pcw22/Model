@@ -8,7 +8,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-class Model_Cache_Static implements Model_CacheInterface
+class Model_Cache_Driver_Static implements Model_Cache_DriverInterface
 {
     /**
      * The static cache.
@@ -23,7 +23,7 @@ class Model_Cache_Static implements Model_CacheInterface
      * @param string $key   The cache key.
      * @param mixed  $value The cache value.
      * 
-     * @return Model_Cache_Static
+     * @return Model_Cache_Driver_Static
      */
     public function set($key, $value)
     {

@@ -8,10 +8,10 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-class Model_Cache_Cascade implements Model_CacheInterface
+class Model_Cache_Driver_Cascade implements Model_Cache_DriverInterface
 {
     /**
-     * The cache sources being used..
+     * The cache sources being used.
      * 
      * @var array
      */
@@ -20,11 +20,11 @@ class Model_Cache_Cascade implements Model_CacheInterface
     /**
      * Adds a driver to the handler.
      * 
-     * @param Model_CacheInterface $cache A driver to use.
+     * @param Model_Cache_DriverInterface $cache A driver to use.
      * 
-     * @return Model_Cache_Cascade
+     * @return Model_Cache_Driver_Cascade
      */
-    public function addDriver(Model_CacheInterface $cache)
+    public function addDriver(Model_Cache_DriverInterface $cache)
     {
         $this->cache[] = $cache;
         return $this;
@@ -36,7 +36,7 @@ class Model_Cache_Cascade implements Model_CacheInterface
      * @param string $key   The cache key.
      * @param mixed  $value The cache value.
      * 
-     * @return Model_Cache_Cascade
+     * @return Model_Cache_Driver_Cascade
      */
     public function set($key, $value)
     {

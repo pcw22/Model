@@ -34,8 +34,8 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     protected $specialMethodTypes = array(
         'set',
         'get',
-        'has',
-        'clear'
+        'isset',
+        'unset'
     );
     
     /**
@@ -118,7 +118,11 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function __set($name, $value)
     {
-        return $this->set($name, $value);
+        if ($method = $this->_getMethodNameFor('set', $name)) {
+            return $this->$method($value);
+        }
+        $this->data[$name] = $value;
+        return $this;
     }
     
     /**
@@ -130,7 +134,13 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function &__get($name)
     {
-        return $this->get($name);
+        if ($method = $this->_getMethodNameFor('get', $name)) {
+            return $this->$method($value);
+        }
+        if ($this->_isset($name)) {
+            return $this->data[$name];
+        }
+        return null;
     }
     
     /**
@@ -140,7 +150,10 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function __isset($name)
     {
-        return $this->has($name);
+        if ($method = $this->_getMethodNameFor('has', $name)) {
+            return $this->$method($value);
+        }
+        return isset($this->data[$name]);
     }
     
     /**
@@ -152,7 +165,13 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function __unset($name)
     {
-        return $this->clear($name);
+        if ($method = $this->_getMethodNameFor('clear', $name)) {
+            return $this->$method($value);
+        }
+        if ($this->_isset($name)) {
+            unset($this->data[$name]);
+        }
+        return $this;
     }
     
     /**
@@ -165,7 +184,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function offsetSet($name, $value)
     {
-        return $this->set($name, $value);
+        return $this->__set($name, $value);
     }
     
     /**
@@ -177,7 +196,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function offsetGet($name)
     {
-        return $this->get($name);
+        return $this->__get($name);
     }
     
     /**
@@ -189,7 +208,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function offsetExists($name)
     {
-        return $this->has($name);
+        return $this->__isset($name);
     }
     
     /**
@@ -201,7 +220,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function offsetUnset($name)
     {
-        return $this->clear($name);
+        return $this->__unset($name);
     }
     
     /**
@@ -211,7 +230,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function current()
     {
-        return $this->get($this->key());
+        return $this->__get($this->key());
     }
     
     /**
@@ -264,74 +283,6 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     public function count()
     {
         return count($this->data);
-    }
-    
-    /**
-     * The main property setter.
-     * 
-     * @param string $name  The property to set.
-     * @param mixed  $value The value to set.
-     * 
-     * @return Model_Entity
-     */
-    public function set($name, $value)
-    {
-        if ($method = $this->_getMethodNameFor('set', $name)) {
-            return $this->$method($value);
-        }
-        $this->data[$name] = $value;
-        return $this;
-    }
-    
-    /**
-     * The main property getter.
-     * 
-     * @param string $name The value to get.
-     * 
-     * @return mixed
-     */
-    public function get($name)
-    {
-        if ($method = $this->_getMethodNameFor('get', $name)) {
-            return $this->$method($value);
-        }
-        if ($this->has($name)) {
-            return $this->data[$name];
-        }
-        return null;
-    }
-    
-    /**
-     * The main property existence checker.
-     * 
-     * @param string $name The property to check.
-     * 
-     * @return bool
-     */
-    public function has($name)
-    {
-        if ($method = $this->_getMethodNameFor('has', $name)) {
-            return $this->$method($value);
-        }
-        return isset($this->data[$name]);
-    }
-    
-    /**
-     * The main property unsetter.
-     * 
-     * @param string $name The property to unset.
-     * 
-     * @return Model_Entity
-     */
-    public function clear($name)
-    {
-        if ($method = $this->_getMethodNameFor('clear', $name)) {
-            return $this->$method($value);
-        }
-        if ($this->has($name)) {
-            unset($this->data[$name]);
-        }
-        return $this;
     }
     
     /**

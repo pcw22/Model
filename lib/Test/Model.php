@@ -6,8 +6,8 @@ class Test_Model extends Testes_Test
     {
         Model::setDefaultConfig(
             array(
-                'adapter' => 'Mock',
-                'format'  => ':name_:adapter'
+                'driver' => 'Mock',
+                'format' => ':name_:driver'
             )
         );
         Model::setInstance(null, new Model);
@@ -70,7 +70,7 @@ class Content extends Model_Entity
     
 }
 
-class Content_Mock extends Model_Adapter
+class Content_Mock extends Model_Driver
 {
     public function save(Model_Entity $entity)
     {
