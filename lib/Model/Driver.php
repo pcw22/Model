@@ -113,6 +113,13 @@ abstract class Model_Driver
         return md5($model . '->' . $method . serialize($params));
     }
     
+    /**
+     * Returns the specified item from cache.
+     * 
+     * @param string $key The item key.
+     * 
+     * @return mixed
+     */
     private function _fromCache($key)
     {
         if ($this->cache) {
@@ -123,6 +130,14 @@ abstract class Model_Driver
         return null;
     }
     
+    /**
+     * Puts the item in cache using the specified key.
+     * 
+     * @param string $key   The item key.
+     * @param mixed  $value The value to store.
+     * 
+     * @return Model_Driver
+     */
     private function _toCache($key, $value)
     {
         if ($this->cache) {
@@ -132,6 +147,13 @@ abstract class Model_Driver
         return $this;
     }
     
+    /**
+     * Encodes the specified value using the specified strategy.
+     * 
+     * @param mixed $value The value to encode.
+     * 
+     * @return string
+     */
     private function _encode($value)
     {
         if ($this->strategy instanceof Model_Cache_StrategyInterface) {
@@ -140,6 +162,13 @@ abstract class Model_Driver
         return $value;
     }
     
+    /**
+     * Decodes the specified value using the specified strategy.
+     * 
+     * @param string $value The value to decode.
+     * 
+     * @return mixed
+     */
     private function _decode($value)
     {
         if ($this->strategy instanceof Model_Cache_StrategyInterface) {
