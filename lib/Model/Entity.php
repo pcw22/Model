@@ -11,17 +11,11 @@
 abstract class Model_Entity implements ArrayAccess, Countable, Iterator
 {
     /**
-     * The "id" field name. This is used as the main identifying column in the entity.
-     * 
-     * To use a different column name, use:
-     * 
-     * <code>
-     *     $entity->alias(Model_Entity:ID, 'myCustomId');
-     * </code>
+     * The primary key for this entity.
      * 
      * @var string
      */
-    const ID = 'id';
+    protected $primaryKey;
     
     /**
      * Aliases for fields.
@@ -46,6 +40,13 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     protected $inSpecialMethod = null;
     
     /**
+     * The default primary key for all entities.
+     * 
+     * @var string
+     */
+    protected static $defaultPrimaryKey = '_id';
+    
+    /**
      * The special method types available for calling. Special methods begin with
      * the specified items and are executed through __call.
      * 
@@ -67,11 +68,21 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function __construct($vals = array())
     {
+        // pre-define the primary key
+        $this->primaryKey(self::defaultPrimaryKey());
+        
+        // pre-construction
+        $this->preConstruct();
+        
+        // apply the values
         if (is_array($vals) || is_object($vals)) {
             foreach ($vals as $k => $v) {
                 $this->__set($k, $v);
             }
         }
+        
+        // post-construction
+        $this->postConstruct();
     }
     
     /**
@@ -153,7 +164,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      * 
      * @return mixed
      */
-    public function &__get($name)
+    public function __get($name)
     {
         $name = $this->unalias($name);
         if ($method = $this->_getMethodNameFor('get', $name)) {
@@ -192,10 +203,80 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
         if ($method = $this->_getMethodNameFor('unset', $name)) {
             return $this->$method($value);
         }
-        if ($this->_isset($name)) {
+        if ($this->__isset($name)) {
             unset($this->data[$name]);
         }
         return $this;
+    }
+    
+    /**
+     * Sets or returns the primary key. If the key is being set, the old key is 
+     * returned. Otherwise the current key is returned.
+     * 
+     * @param string $key The primary key to use.
+     * 
+     * @return string
+     */
+    public function primaryKey($key = null)
+    {
+        $oldKey = $this->primaryKey;
+        if ($key) {
+            $this->primaryKey = $key;
+        }
+        return $oldKey;
+    }
+    
+    /**
+     * Checks to see if the item exists.
+     * 
+     * @return bool
+     */
+    public function exists()
+    {
+        return $this->__isset($this->primaryKey());
+    }
+    
+    /**
+     * Converts the entity to an array.
+     * 
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = array();
+        foreach ($this as $k => $v) {
+            $array[$k] = $v;
+        }
+        return $array;
+    }
+    
+    /**
+     * Aliases the field with the specified alias.
+     * 
+     * @param string $field The field to alias.
+     * @param string $alias The alias to use.
+     * 
+     * @return Model_Entity
+     */
+    public function alias($field, $alias)
+    {
+        $this->aliases[$alias] = $field;
+        return $this;
+    }
+    
+    /**
+     * Returns the real name of the specified alias.
+     * 
+     * @param string $alias The alias to get the real name for.
+     * 
+     * @return string
+     */
+    public function unalias($alias)
+    {
+        if (isset($this->aliases[$alias])) {
+            return $this->aliases[$alias];
+        }
+        return $alias;
     }
     
     /**
@@ -296,7 +377,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function valid()
     {
-        return !is_null(current($this->data));
+        return !is_null($this->key());
     }
     
     /**
@@ -310,46 +391,118 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     }
     
     /**
-     * Converts the entity to an array.
+     * Gets called prior to saving to ensure the entity is valid.
      * 
-     * @return array
+     * If the entity is not valid, this method should throw an exception, or return
+     * false if a generic exception is desired.
+     * 
+     * @return mixed
+     * 
+     * @throws Exception
      */
-    public function toArray()
+    public function validate()
     {
-        $array = array();
-        foreach ($this as $k => $v) {
-            $array[$k] = $v;
-        }
-        return $array;
+        
     }
     
     /**
-     * Aliases the field with the specified alias.
+     * Pre-construct event.
      * 
-     * @param string $field The field to alias.
-     * @param string $alias The alias to use.
-     * 
-     * @return Model_Entity
+     * @return void
      */
-    public function alias($field, $alias)
+    public function preConstruct()
     {
-        $this->aliases[$alias] = $field;
-        return $this;
+        
     }
     
     /**
-     * Returns the real name of the specified alias.
+     * Post-construct event.
      * 
-     * @param string $alias The alias to get the real name for.
-     * 
-     * @return string
+     * @return void
      */
-    public function unalias($alias)
+    public function postConstruct()
     {
-        if (isset($this->aliases[$alias])) {
-            return $this->aliases[$alias];
-        }
-        return $alias;
+        
+    }
+    
+    /**
+     * Pre-insert event.
+     * 
+     * @return void
+     */
+    public function preInsert()
+    {
+        
+    }
+    
+    /**
+     * Pre-insert event.
+     * 
+     * @return void
+     */
+    public function postInsert()
+    {
+        
+    }
+    
+    /**
+     * Pre-update event.
+     * 
+     * @return void
+     */
+    public function preUpdate()
+    {
+        
+    }
+    
+    /**
+     * Post-update event.
+     * 
+     * @return void
+     */
+    public function postUpdate()
+    {
+        
+    }
+    
+    /**
+     * Pre-save event.
+     * 
+     * @return void
+     */
+    public function preSave()
+    {
+        
+    }
+    
+    /**
+     * Post-save event.
+     * 
+     * @return void
+     */
+    public function postSave()
+    {
+        
+    }
+    
+    /**
+     * Pre-remove event.
+     * 
+     * @return void
+     */
+    public function preRemove()
+    {
+        
+    }
+    
+    /**
+     * Post-remove event.
+     * 
+     * @return void
+     */
+    public function postRemove()
+    {
+        
     }
     
     /**
@@ -367,5 +520,22 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
             return $method;
         }
         return null;
+    }
+    
+    /**
+     * Sets or returns the default primary key. If the key is being set, the old
+     * key is returned. Otherwise the current default key is returned.
+     * 
+     * @param string $key The default primary key.
+     * 
+     * @return string
+     */
+    public static function defaultPrimaryKey($key = null)
+    {
+        $oldKey = self::$defaultPrimaryKey;
+        if ($key) {
+            self::$defaultPrimaryKey = $key;
+        }
+        return $oldKey;
     }
 }

@@ -5,7 +5,7 @@ require dirname(__FILE__) . '/../lib/Testes/Autoloader.php';
 Model_Autoloader::register();
 Testes_Autoloader::register(dirname(__FILE__) . '/../lib');
 
-$tests = new Test_Model;
+$tests = new Test;
 $tests->run();
 
 if ($assertions = $tests->assertions()) {

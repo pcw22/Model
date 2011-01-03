@@ -44,8 +44,10 @@ class Model
      * @var array
      */
     protected static $defaultConfig = array(
-        'driver' => null,
-        'format' => ':name_:driver'
+        'driver'       => null,
+        'format'       => ':driver_:name',
+        'cache.class'  => null,
+        'cache.config' => array()
     );
     
     /**
@@ -58,7 +60,7 @@ class Model
     public function __construct(array $config = array())
     {
         $this->config = array_merge_recursive(self::$defaultConfig, $this->config, $config);
-        if (!$this->config['driver']) {
+        if (!isset($this->config['driver']) || !$this->config['driver']) {
             throw new Model_Exception(
                 'The driver configuration variable must be specified.'
             );
@@ -87,7 +89,10 @@ class Model
      */
     public function __get($name)
     {
-        return $this->get($name);
+        if (isset($this->drivers[$name])) {
+            return $this->drivers[$name];
+        }
+        return $this->getDriver($name);
     }
     
     /**
@@ -97,30 +102,25 @@ class Model
      * 
      * @return Model_Driver
      */
-    public function get($name, $cached = true)
+    public function getDriver($name)
     {
-        if ($cached && isset($this->drivers[$name])) {
-            return $this->drivers[$name];
+        // configure the driver
+        $driver = $this->formatDriver($name);
+        $cache  = $this->config['cache.class'];
+        
+        // configure caching
+        if ($cache) {
+            $cache = new $cache($this->config['cache.config']);
         }
         
-        // create the driver
-        $class = $this->formatDriver($name);
-        $class = new $class;
-        
-        // check for correct instance
-        if (!$class instanceof Model_Driver) {
-            throw new Model_Exception(
-                'The driver "'
-                . $name
-                . '" must be a subclass of "Model_Driver".'
-            );
-        }
+        // configure the dispatcher
+        $dispatcher = new Model_Dispatcher(new $driver, $cache);
         
         // cache it
-        $this->drivers[$name] = $class;
+        $this->drivers[$name] = $dispatcher;
         
         // and return it
-        return $class;
+        return $dispatcher;
     }
     
     /**
@@ -145,10 +145,10 @@ class Model
      * 
      * @return void
      */
-    public static function setInstance($name = null, Model $model)
+    public static function set($name = null, Model $model)
     {
         if (!$name) {
-            $name = self::getDefaultInstance();
+            $name = self::getDefault();
         }
         self::$instances[$name] = $model;
     }
@@ -161,17 +161,13 @@ class Model
      * 
      * @return Model
      */
-    public static function getInstance($name = null)
+    public static function get($name = null)
     {
         if (!$name) {
-            $name = self::getDefaultInstance();
+            $name = self::getDefault();
         }
-        if (!self::hasInstance($name)) {
-            throw new Model_Exception(
-                'The model instance "'
-                . $name
-                . '" does not exist.'
-            );
+        if (!self::has($name)) {
+            self::$instances[$name] = new self;
         }
         return self::$instances[$name];
     }
@@ -183,27 +179,27 @@ class Model
      * 
      * @return bool
      */
-    public static function hasInstance($name = null)
+    public static function has($name = null)
     {
         if (!$name) {
-            $name = self::getDefaultInstance();
+            $name = self::getDefault();
         }
         return isset(self::$instances[$name]);
     }
     
     /**
-     * Clears the specified instance if it exists.
+     * Removes the specified instance if it exists.
      * 
      * @param string $name The instance name.
      * 
      * @return void
      */
-    public static function clearInstance($name = null)
+    public static function remove($name = null)
     {
         if (!$name) {
-            $name = self::getDefaultInstance();
+            $name = self::getDefault();
         }
-        if (self::hasInstance($name)) {
+        if (self::has($name)) {
             unset(self::$instances[$name]);
         }
     }
@@ -215,7 +211,7 @@ class Model
      * 
      * @return void
      */
-    public static function setDefaultInstance($name)
+    public static function setDefault($name)
     {
         self::$defaultInstance = $name;
     }
@@ -225,7 +221,7 @@ class Model
      * 
      * @return string
      */
-    public static function getDefaultInstance()
+    public static function getDefault()
     {
         return self::$defaultInstance;
     }
@@ -239,7 +235,7 @@ class Model
      */
     public static function setDefaultConfig(array $config)
     {
-        self::$defaultConfig = $config;
+        self::$defaultConfig = array_merge(self::$defaultConfig, $config);
     }
     
     /**

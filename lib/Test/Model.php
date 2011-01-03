@@ -2,24 +2,33 @@
 
 class Test_Model extends Testes_Test
 {
+    /**
+     * Set up the model test.
+     * 
+     * @return void
+     */
     public function setUp()
     {
-        Model::setDefaultConfig(
-            array(
-                'driver' => 'Mock',
-                'format' => ':name_:driver'
-            )
-        );
         Model::setInstance(null, new Model);
         Model::setInstance('custom', new Model);
     }
     
+    /**
+     * Makes sure instances are set properly.
+     * 
+     * @return void
+     */
     public function testInstanceSetting()
     {
         $this->assert(Model::hasInstance('default'), 'The model does not have a default instance.');
         $this->assert(Model::hasInstance('custom'), 'The model does not have a custom instance.');
     }
     
+    /**
+     * Make sure a default instance can be rolled back.
+     * 
+     * @return void
+     */
     public function testDefaultInstance()
     {
         // set a different default name
@@ -35,45 +44,37 @@ class Test_Model extends Testes_Test
         $this->assert($hasDefault, 'Could not change the default instance to another instance.');
     }
     
-    public function testInstanceClearing()
+    /**
+     * Tests whehter or not an instance can be removed.
+     * 
+     * @return void
+     */
+    public function testInstanceRemoving()
     {
-        // before we clear
+        // before we remove
         $hasBefore = Model::hasInstance('custom');
         
-        // now clear
-        Model::clearInstance('custom');
+        // now remove
+        Model::removeInstance('custom');
         
         // and re-check
         $hasAfter = Model::hasInstance('custom');
         
         // make sure it existed before and it doesn't exist after
         $this->assert($hasBefore, 'There was no custom instance to begin with.');
-        $this->assert(!$hasAfter, 'The custom instance could not be cleared.');
+        $this->assert(!$hasAfter, 'The custom instance could not be remove.');
     }
     
-    public function testAdapterGetting()
+    /**
+     * Tests whehter or not the proper driver is returned using the getter methods.
+     * 
+     * @return void
+     */
+    public function testDriverGetting()
     {
         $this->assert(
-            Model::getInstance()->content instanceof Content_Mock,
-            'The content adapter is the incorrect instance when using "__get()".'
+            Model::getInstance()->content->getDriver() instanceof Mock_Content,
+            'The content adapter is the incorrect instance.'
         );
-        
-        $this->assert(
-            Model::getInstance()->get('content') instanceof Content_Mock,
-            'The content adapter is the incorrect instance when using "get()".'
-        );
-    }
-}
-
-class Content extends Model_Entity
-{
-    
-}
-
-class Content_Mock extends Model_Driver
-{
-    public function save(Model_Entity $entity)
-    {
-        
     }
 }
