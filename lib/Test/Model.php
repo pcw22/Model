@@ -9,8 +9,8 @@ class Test_Model extends Testes_Test
      */
     public function setUp()
     {
-        Model::setInstance(null, new Model);
-        Model::setInstance('custom', new Model);
+        Model::set(null, new Model);
+        Model::set('custom', new Model);
     }
     
     /**
@@ -20,8 +20,8 @@ class Test_Model extends Testes_Test
      */
     public function testInstanceSetting()
     {
-        $this->assert(Model::hasInstance('default'), 'The model does not have a default instance.');
-        $this->assert(Model::hasInstance('custom'), 'The model does not have a custom instance.');
+        $this->assert(Model::has('default'), 'The model does not have a default instance.');
+        $this->assert(Model::has('custom'), 'The model does not have a custom instance.');
     }
     
     /**
@@ -32,13 +32,13 @@ class Test_Model extends Testes_Test
     public function testDefaultInstance()
     {
         // set a different default name
-        Model::setDefaultInstance('custom');
+        Model::setDefault('custom');
         
         // and test it
-        $hasDefault = Model::getDefaultInstance() === 'custom';
+        $hasDefault = Model::getDefault() === 'custom';
         
         // and reset it
-        Model::setDefaultInstance('default');
+        Model::setDefault('default');
         
         // assert
         $this->assert($hasDefault, 'Could not change the default instance to another instance.');
@@ -52,13 +52,13 @@ class Test_Model extends Testes_Test
     public function testInstanceRemoving()
     {
         // before we remove
-        $hasBefore = Model::hasInstance('custom');
+        $hasBefore = Model::has('custom');
         
         // now remove
-        Model::removeInstance('custom');
+        Model::remove('custom');
         
         // and re-check
-        $hasAfter = Model::hasInstance('custom');
+        $hasAfter = Model::has('custom');
         
         // make sure it existed before and it doesn't exist after
         $this->assert($hasBefore, 'There was no custom instance to begin with.');
@@ -73,7 +73,7 @@ class Test_Model extends Testes_Test
     public function testDriverGetting()
     {
         $this->assert(
-            Model::getInstance()->content->getDriver() instanceof Mock_Content,
+            Model::get()->content->getDriver() instanceof Mock_Content,
             'The content adapter is the incorrect instance.'
         );
     }

@@ -21,7 +21,7 @@ interface Model_DriverInterface
      * 
      * @return Model_Driver
      */
-    public function insert(Model_Entity $entity);
+    public function insert($entity);
     
     /**
      * We must provide driver specific CRUD operations.
@@ -34,7 +34,7 @@ interface Model_DriverInterface
      * 
      * @return Model_Driver
      */
-    public function update(Model_Entity $entity);
+    public function update($entity);
     
     /**
      * We must provide driver specific CRUD operations.
@@ -47,5 +47,5 @@ interface Model_DriverInterface
      * 
      * @return Model_Driver
      */
-    public function remove(Model_Entity $entity);
+    public function remove($entity);
 }

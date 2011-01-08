@@ -9,9 +9,12 @@ class Test_Dispatcher extends Testes_Test
      */
     public function testSave()
     {
+        $mock = new Model_Dispatcher(new Mock_Content, 'Content');
+        
+        // try saving of good instances
         try {
-            $mock = new Model_Dispatcher(new Mock_Content);
             $mock->save(new Content);
+            $mock->save(array());
         } catch (Exception $e) {
             $this->assert(false, 'Could not save with message: ' . $e->getMessage());
         }
@@ -24,9 +27,12 @@ class Test_Dispatcher extends Testes_Test
      */
     public function testInsert()
     {
+        $mock = new Model_Dispatcher(new Mock_Content, 'Content');
+        
+        // try saving of good instances
         try {
-            $mock = new Model_Dispatcher(new Mock_Content);
             $mock->insert(new Content);
+            $mock->insert(array());
         } catch (Exception $e) {
             $this->assert(false, 'Could not insert with message: ' . $e->getMessage());
         }
@@ -39,9 +45,12 @@ class Test_Dispatcher extends Testes_Test
      */
     public function testUpdate()
     {
+        $mock = new Model_Dispatcher(new Mock_Content, 'Content');
+        
+        // try saving of good instances
         try {
-            $mock = new Model_Dispatcher(new Mock_Content);
             $mock->update(new Content);
+            $mock->update(array());
         } catch (Exception $e) {
             $this->assert(false, 'Could not update with message: ' . $e->getMessage());
         }
@@ -54,11 +63,14 @@ class Test_Dispatcher extends Testes_Test
      */
     public function testRemove()
     {
+        $mock = new Model_Dispatcher(new Mock_Content, 'Content');
+        
+        // try saving of good instances
         try {
-            $mock = new Model_Dispatcher(new Mock_Content);
             $mock->remove(new Content);
+            $mock->remove(array());
         } catch (Exception $e) {
-            $this->assert(false, 'Could not save with message: ' . $e->getMessage());
+            $this->assert(false, 'Could not remove with message: ' . $e->getMessage());
         }
     }
     
@@ -69,7 +81,7 @@ class Test_Dispatcher extends Testes_Test
      */
     public function testCaching()
     {
-        $mock = Model::getInstance()->content;
+        $mock = Model::get()->content;
         $mock->findById(1);
         $mock->findById(1);
         $mock->findById(2);

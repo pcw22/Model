@@ -18,6 +18,13 @@ class Model_Dispatcher
     private $_driver;
     
     /**
+     * The entity name to use.
+     * 
+     * @var string
+     */
+    private $_entity;
+    
+    /**
      * The cache driver, if any, to use for caching.
      * 
      * @var Model_Cache_DriverInterface
@@ -31,9 +38,10 @@ class Model_Dispatcher
      * 
      * @return Model_Dispatcher
      */
-    public function __construct(Model_DriverInterface $driver, Model_CacheInterface $cache = null)
+    public function __construct(Model_DriverInterface $driver, $entity, Model_CacheInterface $cache = null)
     {
         $this->_driver = $driver;
+        $this->_entity = $entity;
         $this->_cache  = $cache;
     }
     
@@ -75,12 +83,15 @@ class Model_Dispatcher
     /**
      * Automates insert/update based on entity existence.
      * 
-     * @param Model_Entity $entity The entity being saved.
+     * @param mixed $entity The entity being saved.
      * 
      * @return Model_Driver
      */
-    public function save(Model_Entity $entity)
+    public function save($entity)
     {
+        // ensure an entity is used
+        $entity = $this->_ensureEntity($entity);
+        
         // if an id is set, update, if not, insert
         if ($entity->exists()) {
             $this->update($entity);
@@ -88,27 +99,26 @@ class Model_Dispatcher
             $this->insert($entity);
         }
         
-        // chain
-        return $this;
+        // return the entity
+        return $entity;
     }
     
     /**
      * Calls the implemented insert method and calls events.
      * 
-     * @param Model_Entity $entity The entity to insert.
+     * @param mixed $entity The entity to insert.
      * 
      * @return Model_Driver
      */
-    public function insert(Model_Entity $entity)
+    public function insert($entity)
     {
-        // ensure validity
-        if ($entity->validate() === false) {
-            throw new Model_Exception('The entity "' . get_class($entity) . '" was unable to be inserted.');
-        }
+        // ensure an entity is used
+        $entity = $this->_ensureEntity($entity);
         
-        // pre-save events
-        $entity->preSave();
-        $entity->preUpdate();
+        // ensure validity
+        if ($entity->preSave() === false || $entity->preInsert() === false) {
+            throw new Model_Exception('The entity "' . get_class($entity) . '" was unable to be updated because it is not valid.');
+        }
         
         // call driver method
         $this->_driver->insert($entity);
@@ -117,28 +127,27 @@ class Model_Dispatcher
         $entity->postSave();
         $entity->postInsert();
         
-        // chain
-        return $this;
+        // return the entity
+        return $entity;
         
     }
     
     /**
      * Calls the implemented update method and calls events.
      * 
-     * @param Model_Entity $entity The entity to insert.
+     * @param mixed $entity The entity to insert.
      * 
      * @return Model_Driver
      */
-    public function update(Model_Entity $entity)
+    public function update($entity)
     {
-        // ensure validity
-        if ($entity->validate() === false) {
-            throw new Model_Exception('The entity "' . get_class($entity) . '" was unable to be updated.');
-        }
+        // ensure an entity is used
+        $entity = $this->_ensureEntity($entity);
         
-        // pre-save events
-        $entity->preSave();
-        $entity->preUpdate();
+        // ensure validity
+        if ($entity->preSave() === false || $entity->preUpdate() === false) {
+            throw new Model_Exception('The entity "' . get_class($entity) . '" was unable to be updated because it is not valid.');
+        }
         
         // call driver method
         $this->_driver->update($entity);
@@ -147,8 +156,8 @@ class Model_Dispatcher
         $entity->postSave();
         $entity->postUpdate();
         
-        // chain
-        return $this;
+        // return the entity
+        return $entity;
     }
     
     /**
@@ -158,14 +167,50 @@ class Model_Dispatcher
      * 
      * @return Model_Driver
      */
-    public function remove(Model_Entity $entity)
+    public function remove($entity)
     {
+        // ensure an entity is used
+        $entity = $this->_ensureEntity($entity);
+        
+        // cancel removing if
         if ($entity->preRemove() === false) {
-            return $this;
+            throw new Model_Exception('The entity "' . get_class($entity) . '" was unable to be updated because it is not valid.');
         }
+        
+        // remove
         $this->_driver->remove($entity);
+        
+        // post-remove event
         $entity->postRemove();
-        return $this;
+        
+        // return the entity
+        return $entity;
+    }
+    
+    /**
+     * Returns a new instance of the entity for the current driver.
+     * 
+     * @param mixed $values The entity or values to pass to the entity constructor.
+     * 
+     * @return Model_Entity
+     */
+    public function _ensureEntity($values = array())
+    {
+        // if the passed value is already a valid entity, just return it
+        if ($values instanceof $this->_entity) {
+            return $values;
+        }
+        
+        // reflect the entity class
+        $entity = new ReflectionClass($this->_entity);
+        
+        // make sure after reflecting that it's a valid subclass
+        if (!$entity->isSubclassOf('Model_Entity')) {
+            throw new Model_Exception('The entity "' . $entity->getName() . '" must be a subclass of "Moden_Entity".');
+        }
+        
+        // return a new instance of it and pass it the passed values
+        return $entity->newInstance($values);
     }
     
     /**

@@ -8,15 +8,8 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-abstract class Model_Entity implements ArrayAccess, Countable, Iterator
+abstract class Model_Entity implements Model_Accessible
 {
-    /**
-     * The primary key for this entity.
-     * 
-     * @var string
-     */
-    protected $primaryKey;
-    
     /**
      * Aliases for fields.
      * 
@@ -32,128 +25,35 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     protected $data = array();
     
     /**
-     * A flag for flagging which special method is being executed. This is so that
-     * magic methods and special methods don't recurse.
-     * 
-     * @var string
-     */
-    protected $inSpecialMethod = null;
-    
-    /**
-     * The default primary key for all entities.
-     * 
-     * @var string
-     */
-    protected static $defaultPrimaryKey = '_id';
-    
-    /**
-     * The special method types available for calling. Special methods begin with
-     * the specified items and are executed through __call.
-     * 
-     * @var array
-     */
-    protected $specialMethodTypes = array(
-        'set',
-        'get',
-        'isset',
-        'unset'
-    );
-    
-    /**
      * Constructs a new entity and sets any passed values.
      * 
      * @param mixed $vals The values to set.
      * 
      * @return Model_Entity
      */
-    public function __construct($vals = array())
+    public function __construct($values = array())
     {
-        // pre-define the primary key
-        $this->primaryKey(self::defaultPrimaryKey());
-        
         // pre-construction
         $this->preConstruct();
         
-        // apply the values
-        if (is_array($vals) || is_object($vals)) {
-            foreach ($vals as $k => $v) {
-                $this->__set($k, $v);
-            }
-        }
+        // automate values
+        $this->import($values);
         
         // post-construction
         $this->postConstruct();
     }
     
     /**
-     * Gets called when a special method is called. If any other method is called, then
-     * an exception is thrown.
+     * Easy property setting.
      * 
-     * @param string $name The special method.
-     * @param array  $args The arguments passed.
-     * 
-     * @return mixed
-     */
-    public function __call($name, array $args = array())
-    {
-        // find out the method type
-        $type = null;
-        foreach ($this->specialMethodTypes as $special) {
-            if ($special === substr($name, 0, strlen($special))) {
-                $type = $special;
-                break;
-            }
-        }
-        
-        // if a special type isn't indicated, then throw an exception
-        if (!$type) {
-            throw new Model_Exception(
-                'Invalid method call to '
-                . get_class($this)
-                . '->'
-                . $name
-                . '.'
-            );
-        }
-        
-        // find the property and build the special method name
-        $prop = substr($name, strlen($type), strlen($name));
-        $meth = $type . $prop;
-        
-        // flag as in a special method
-        $this->inSpecialMethod = strtolower($meth);
-        
-        // format the property
-        $prop[0] = strtolower($prop[0]);
-        
-        // the property name should be the first part of the argument list
-        array_unshift($args, $prop);
-        
-        // call the method and capture the result
-        $result = call_user_func_array(array($this, $type), $args);
-        
-        // un-flag
-        $this->inSpecialMethod = null;
-        
-        // return the special method result
-        return $result;
-    }
-    
-    /**
-     * For easy setting via property.
-     * 
-     * @param string $name  The property name.
+     * @param string $name The property name.
      * @param mixed  $value The property value.
      * 
-     * @return Model_Entity
+     * @return void
      */
     public function __set($name, $value)
     {
-        $name = $this->unalias($name);
-        if ($method = $this->_getMethodNameFor('set', $name)) {
-            return $this->$method($value);
-        }
-        $this->data[$name] = $value;
+        $this->get($name)->set($value);
         return $this;
     }
     
@@ -166,14 +66,7 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function __get($name)
     {
-        $name = $this->unalias($name);
-        if ($method = $this->_getMethodNameFor('get', $name)) {
-            return $this->$method($value);
-        }
-        if ($this->__isset($name)) {
-            return $this->data[$name];
-        }
-        return null;
+        return $this->get($name)->get();
     }
     
     /**
@@ -184,9 +77,6 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     public function __isset($name)
     {
         $name = $this->unalias($name);
-        if ($method = $this->_getMethodNameFor('isset', $name)) {
-            return $this->$method($value);
-        }
         return isset($this->data[$name]);
     }
     
@@ -200,9 +90,6 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     public function __unset($name)
     {
         $name = $this->unalias($name);
-        if ($method = $this->_getMethodNameFor('unset', $name)) {
-            return $this->$method($value);
-        }
         if ($this->__isset($name)) {
             unset($this->data[$name]);
         }
@@ -210,20 +97,53 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     }
     
     /**
-     * Sets or returns the primary key. If the key is being set, the old key is 
-     * returned. Otherwise the current key is returned.
+     * Sets a property type.
      * 
-     * @param string $key The primary key to use.
+     * @param string                         $name     The property name.
+     * @param Model_Entity_PropertyInterface $property The property value.
      * 
-     * @return string
+     * @return void
      */
-    public function primaryKey($key = null)
+    public function set($name, Model_Entity_PropertyInterface $property)
     {
-        $oldKey = $this->primaryKey;
-        if ($key) {
-            $this->primaryKey = $key;
+        $name = $this->unalias($name);
+        
+        // set the property object and return it
+        $this->data[$name] = $property;
+        return $this->data[$name];
+    }
+    
+    /**
+     * For easy property getting.
+     * 
+     * @param string $name The property name.
+     * 
+     * @return mixed
+     */
+    public function get($name)
+    {
+        $name = $this->unalias($name);
+        
+        // if it isn't set yet, set it
+        if (!isset($this->data[$name])) {
+            $this->data[$name] = new Model_Entity_Property_Default($this);
         }
-        return $oldKey;
+        
+        // and we just return the property object
+        return $this->data[$name];
+    }
+
+    /**
+     * Tells the current entity to behave like the speicfied behavior.
+     * 
+     * @param Model_Entity_BehaviorInterface $behavior The behavior to behave like.
+     * 
+     * @return Model_Entity
+     */
+    public function actAs(Model_Entity_BehaviorInterface $behavior)
+    {
+        $behavior->init($this);
+        return $this;
     }
     
     /**
@@ -233,19 +153,40 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
      */
     public function exists()
     {
-        return $this->__isset($this->primaryKey());
+        return $this->__get('_id');
+    }
+    
+    /**
+     * Fills the entity with the specified values.
+     * 
+     * @param mixed $array The array to import.
+     * 
+     * @return Model_Entity
+     */
+    public function import($array)
+    {
+        if (is_array($array) || is_object($array)) {
+            foreach ($array as $k => $v) {
+                $this->get($k)->import($v);
+            }
+        } else {
+            $this->get('_id')->import($array);
+        }
+        return $this;
     }
     
     /**
      * Converts the entity to an array.
      * 
+     * @param Model_Filter_MapInterface $filter The filter to apply.
+     * 
      * @return array
      */
-    public function toArray()
+    public function export()
     {
         $array = array();
-        foreach ($this as $k => $v) {
-            $array[$k] = $v;
+        foreach ($this->data as $k => $v) {
+            $array[$k] = $v->export();
         }
         return $array;
     }
@@ -391,21 +332,6 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     }
     
     /**
-     * Gets called prior to saving to ensure the entity is valid.
-     * 
-     * If the entity is not valid, this method should throw an exception, or return
-     * false if a generic exception is desired.
-     * 
-     * @return mixed
-     * 
-     * @throws Exception
-     */
-    public function validate()
-    {
-        
-    }
-    
-    /**
      * Pre-construct event.
      * 
      * @return void
@@ -503,39 +429,5 @@ abstract class Model_Entity implements ArrayAccess, Countable, Iterator
     public function postRemove()
     {
         
-    }
-    
-    /**
-     * Gets the special method name for the specified type using the passed in name.
-     * 
-     * @param string $type The special method type.
-     * @param string $name The name of the original method.
-     * 
-     * @return string
-     */
-    private function _getMethodNameFor($type, $name)
-    {
-        $method = strtolower($type . $name);
-        if ($method !== $this->inSpecialMethod && method_exists($this, $method)) {
-            return $method;
-        }
-        return null;
-    }
-    
-    /**
-     * Sets or returns the default primary key. If the key is being set, the old
-     * key is returned. Otherwise the current default key is returned.
-     * 
-     * @param string $key The default primary key.
-     * 
-     * @return string
-     */
-    public static function defaultPrimaryKey($key = null)
-    {
-        $oldKey = self::$defaultPrimaryKey;
-        if ($key) {
-            self::$defaultPrimaryKey = $key;
-        }
-        return $oldKey;
     }
 }

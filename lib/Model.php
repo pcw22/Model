@@ -45,9 +45,10 @@ class Model
      */
     protected static $defaultConfig = array(
         'driver'       => null,
-        'format'       => ':driver_:name',
+        'driver.class' => ':driver_:name',
+        'entity.class' => ':name',
         'cache.class'  => null,
-        'cache.config' => array()
+        'cache.args'   => array()
     );
     
     /**
@@ -68,7 +69,8 @@ class Model
     }
     
     /**
-     * Returns a new instance of the specified driver.
+     * Returns a new instance of the specified driver and passes the given
+     * arguments to the constructor.
      * 
      * @param string $name The driver to get.
      * @param array  $args The arguments passed.
@@ -77,11 +79,12 @@ class Model
      */
     public function __call($name, array $args = array())
     {
-        return $this->get($name, false);
+        return $this->getDispatcher($name, $args);
     }
     
     /**
-     * Returns the specified driver.
+     * Returns the specified driver. If the driver has already been instantiated
+     * the cached instance is returned.
      * 
      * @param string $name The driver to return.
      * 
@@ -92,7 +95,7 @@ class Model
         if (isset($this->drivers[$name])) {
             return $this->drivers[$name];
         }
-        return $this->getDriver($name);
+        return $this->getDispatcher($name);
     }
     
     /**
@@ -102,19 +105,14 @@ class Model
      * 
      * @return Model_Driver
      */
-    public function getDriver($name)
+    public function getDispatcher($name, array $args = array())
     {
-        // configure the driver
-        $driver = $this->formatDriver($name);
-        $cache  = $this->config['cache.class'];
-        
-        // configure caching
-        if ($cache) {
-            $cache = new $cache($this->config['cache.config']);
-        }
-        
         // configure the dispatcher
-        $dispatcher = new Model_Dispatcher(new $driver, $cache);
+        $dispatcher = new Model_Dispatcher(
+            $this->getDriverInstance($name, $args),
+            $this->formatEntityClass($name),
+            $this->getCacheInstance($name)
+        );
         
         // cache it
         $this->drivers[$name] = $dispatcher;
@@ -130,11 +128,74 @@ class Model
      * 
      * @return string
      */
-    protected function formatDriver($name)
+    protected function formatDriverClass($name)
     {
-        $class = str_replace(':name', ucfirst($name), $this->config['format']);
+        $class = str_replace(':name', ucfirst($name), $this->config['driver.class']);
         $class = str_replace(':driver', ucfirst($this->config['driver']), $class);
         return $class;
+    }
+    
+    /**
+     * Formats the entity classname and returns it.
+     * 
+     * @param string $name The driver name.
+     * 
+     * @return string
+     */
+    protected function formatEntityClass($name)
+    {
+        $class = str_replace(':name', ucfirst($name), $this->config['entity.class']);
+        return $class;
+    }
+    
+    /**
+     * Formats the cache classname and returns it.
+     * 
+     * @param string $name The driver name.
+     * 
+     * @return string
+     */
+    protected function formatCacheClass($name)
+    {
+        $class = str_replace(':name', ucfirst($name), $this->config['cache.class']);
+        $class = str_replace(':driver', ucfirst($this->config['driver']), $class);
+        return $class;
+    }
+    
+    /**
+     * Returns the driver instance for the specified name.
+     * 
+     * @param string $name The unformatted name of the driver to return.
+     * @param array  $args The arguments to pass to the driver, if any.
+     * 
+     * @return Model_DriverInterface
+     */
+    protected function getDriverInstance($name, array $args = array())
+    {
+        $driver = $this->formatDriverClass($name);
+        $driver = new ReflectionClass($driver);
+        if ($driver->hasMethod('__construct')) {
+            return $driver->newInstanceArgs($args);
+        }
+        return $driver->newInstance();
+    }
+    
+    /**
+     * Creates a cache instance from the configuration. If caching is disabled, then
+     * it returns null.
+     * 
+     * @return mixed
+     */
+    protected function getCacheInstance($name)
+    {
+        if ($cache = $this->formatCacheClass($name)) {
+            $cache = new ReflectionClass($cache);
+            if ($cache->hasMethod('__construct')) {
+                return $cache->newInstanceArgs($this->config['cache.args']);
+            }
+            return $cache->newInstance();
+        }
+        return null;
     }
     
     /**

@@ -7,14 +7,19 @@ class Test extends Testes_Suite
         Model::setDefaultConfig(
             array(
                 'driver'       => 'Mock',
-                'format'       => ':driver_:name',
-                'cache.driver' => 'Model_Cache_Static'
+                'driver.class' => ':driver_:name',
+                'cache.class'  => 'Model_Cache_Static'
             )
         );
     }
 }
 
 
+
+class Bad extends Model_Entity
+{
+    
+}
 
 class Content extends Model_Entity
 {
@@ -38,20 +43,11 @@ class Content extends Model_Entity
     
     public $postRemove = false;
     
-    public function setName($name)
-    {
-        // split
-        $parts = explode(' ');
-        
-        // apply
-        $this->data['forename'] = $parts[0];
-        $this->data['surname']  = isset($parts[1]) ? $parts[1] : null;
-    }
-    
     public function preConstruct()
     {
         $this->preConstruct = true;
-        $this->alias('_id', 'id');
+        $this->actAs(new Behavior_Default);
+        $this->actAs(new Behavior_Content);
     }
     
     public function postConstruct()
@@ -100,6 +96,15 @@ class Content extends Model_Entity
     }
 }
 
+class User extends Model_Entity
+{
+    public function preConstruct()
+    {
+        $this->actAs(new Behavior_Default);
+        $this->actAs(new Behavior_Person);
+    }
+}
+
 class Mock_Content implements Model_DriverInterface
 {
     public static $called = 0;
@@ -110,18 +115,45 @@ class Mock_Content implements Model_DriverInterface
         return new Content(array('id' => $id, 'title' => 'test ' . $id));
     }
     
-    public function insert(Model_Entity $entity)
+    public function insert($entity)
     {
         $entity->id = md5(microtime());
     }
     
-    public function update(Model_Entity $entity)
+    public function update($entity)
     {
         
     }
     
-    public function remove(Model_Entity $entity)
+    public function remove($entity)
     {
         unset($entity->id);
+    }
+}
+
+class Behavior_Default implements Model_Entity_BehaviorInterface
+{
+    public function init(Model_Entity $entity)
+    {
+        $entity->alias('_id', 'id');
+    }
+}
+
+class Behavior_Content implements Model_Entity_BehaviorInterface
+{
+    public function init(Model_Entity $entity)
+    {
+        $entity->set('user', new Model_Entity_Property_HasOne($entity, array('class' => 'User')));
+        $entity->set('created', new Model_Entity_Property_Date($entity));
+        $entity->set('updated', new Model_Entity_Property_Date($entity));
+    }
+}
+
+class Behavior_Person implements Model_Entity_BehaviorInterface
+{
+    public function init(Model_Entity $entity)
+    {
+        $entity->set('name', new Model_Entity_Property_Name($entity));
+        $entity->set('dob', new Model_Entity_Property_Date($entity));
     }
 }
