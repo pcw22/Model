@@ -12,6 +12,39 @@ class Test extends Testes_Suite
             )
         );
     }
+    /**
+     * Converts the test result ot a string. Detects CLI and formats
+     * according to which interface is calling the tests.
+     * 
+     * @return string
+     */
+    public function __toString()
+    {
+        $str = '';
+        foreach ($this->assertions() as $assertion) {
+            $str .= $assertion->getTestClass()
+                 .  '->'
+                 .  $assertion->getTestMethod()
+                 .  '() - ' 
+                 .  $assertion->getMessage()
+                 .  $this->getBreaker();
+        }
+        return $str ? $str : 'All tests passed!';
+    }
+    
+    /**
+     * Returns the line break element depending on if the test was
+     * accessed via CLI or web.
+     * 
+     * @return string
+     */
+    protected function getBreaker()
+    {
+        if (defined('STDIN')) {
+            return "\n";
+        }
+        return '<br />';
+    }
 }
 
 
