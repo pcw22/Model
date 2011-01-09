@@ -40,13 +40,16 @@ class Model_Entity_Property_Date extends Model_Entity_Property_Default
 
     public function setTimezone($timezone)
     {
-        $this->value->setTimezone(new DateTimeZone($timezone));
+        if ($this->value) {
+            $this->value->setTimezone(new DateTimeZone($timezone));
+        }
+        $this->timezone = $timezone;
         return $this;
     }
 
     public function getTimezone($timezone)
     {
-        return $this->value->getTimezone();
+        return $this->timezone;
     }
 
     public static function setDefaultFormat($format)

@@ -3,17 +3,12 @@
 /**
  * Interface that all suites and tests must implement.
  * 
- * @category UnitTesting
+ * @category Benchmarking
  * @package  Testes
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  (c) 2010 Trey Shugart http://europaphp.org/license
  */
-interface Testes_Test_Testable extends Testes_Runable
+interface Testes_Benchmarkable extends Testes_Runable
 {
-    /**
-     * Returns the failed assertions.
-     * 
-     * @return array
-     */
-    public function assertions();
+	
 }

@@ -8,14 +8,14 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-abstract class Testes_Test_UnitTest implements Testes_Test_Testable
+abstract class Testes_Benchmark implements Testes_Benchmarkable
 {
     /**
-     * The default assertion code.
+     * The method prefix that define benchmarks.
      * 
      * @var int
      */
-    const DEFAULT_CODE = 0;
+    const PREFIX = 'benchmark';
     
     /**
      * The failed assertion list.
@@ -33,7 +33,7 @@ abstract class Testes_Test_UnitTest implements Testes_Test_Testable
     {
         $self = new ReflectionClass($this);
         foreach ($self->getMethods() as $method) {
-            if (!$method->isPublic() || strpos($method->getName(), 'test') !== 0) {
+            if (!$method->isPublic() || strpos($method->getName(), self::PREFIX) !== 0) {
                 continue;
             }
             $this->tests[] = $method->getName();
@@ -73,49 +73,5 @@ abstract class Testes_Test_UnitTest implements Testes_Test_Testable
     public function tearDown()
     {
         
-    }
-    
-    /**
-     * Creates an assertion.
-     * 
-     * @param bool   $expression
-     * @param string $description
-     * @param int    $code
-     * 
-     * @return Testes_Test
-     */
-    public function assert($expression, $description, $code = self::DEFAULT_CODE)
-    {
-        if (!$expression) {
-            $this->assertions[] = new Testes_Test_Assertion($description, $code);
-        }
-        return $this;
-    }
-    
-    /**
-     * Creates an assertion.
-     * 
-     * @param bool   $expression
-     * @param string $description
-     * @param int    $code
-     * 
-     * @return Testes_Test
-     */
-    public function assertFatal($expression, $description, $code = self::DEFAULT_CODE)
-    {
-        if (!$expression) {
-            throw new Testes_Test_FatalAssertion($description, $code);
-        }
-        return $this;
-    }
-    
-    /**
-     * Returns the failed assertions.
-     * 
-     * @return array
-     */
-    public function assertions()
-    {
-        return $this->assertions;
     }
 }

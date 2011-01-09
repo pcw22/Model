@@ -8,7 +8,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  (c) 2010 Trey Shugart http://europaphp.org/license
  */
-class Testes_Test_Suite extends Testes_Suite implements Testes_Test_Testable
+class Testes_TestSuite extends Testes_Suite implements Testes_Testable
 {
 	/**
 	 * The assertions thrown when running the tests.
@@ -33,7 +33,7 @@ class Testes_Test_Suite extends Testes_Suite implements Testes_Test_Testable
             $test = new $test;
             
             // make sure it implements the correct interface
-            if (!$test instanceof Testes_Test_Testable) {
+            if (!$test instanceof Testes_Testable) {
                 throw new Testes_Exception(
                     'The test "'
                     . get_class($test)

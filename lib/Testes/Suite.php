@@ -9,7 +9,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-abstract class Testes_Suite implements Testes_Test_Testable, Iterator, Countable
+abstract class Testes_Suite implements Testes_Runable, Iterator, Countable
 {
     /**
      * Contains all failed assertions.
