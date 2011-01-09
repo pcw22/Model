@@ -1,6 +1,6 @@
 <?php
 
-class Test_EntitySet extends Testes_Test
+class Test_EntitySet extends Testes_Test_UnitTest
 {
     protected $set;
     

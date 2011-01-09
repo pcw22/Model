@@ -1,6 +1,6 @@
 <?php
 
-class Test_Entity extends Testes_Test
+class Test_Entity extends Testes_Test_UnitTest
 {
     /**
      * Sets up the entity test.

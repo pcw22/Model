@@ -8,7 +8,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-abstract class Testes_Test implements Testes_Testable
+abstract class Testes_Test_UnitTest implements Testes_Test_Testable
 {
     /**
      * The default assertion code.
@@ -87,7 +87,7 @@ abstract class Testes_Test implements Testes_Testable
     public function assert($expression, $description, $code = self::DEFAULT_CODE)
     {
         if (!$expression) {
-            $this->assertions[] = new Testes_Assertion($description, $code);
+            $this->assertions[] = new Testes_Test_Assertion($description, $code);
         }
         return $this;
     }
@@ -104,7 +104,7 @@ abstract class Testes_Test implements Testes_Testable
     public function assertFatal($expression, $description, $code = self::DEFAULT_CODE)
     {
         if (!$expression) {
-            throw new Testes_FatalAssertion($description, $code);
+            throw new Testes_Test_FatalAssertion($description, $code);
         }
         return $this;
     }

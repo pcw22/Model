@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Interface for all suites and tests must implement.
+ * Interface that anything that is runable must implement.
  * 
- * @category UnitTesting
+ * @category Benchmarking
  * @package  Testes
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  (c) 2010 Trey Shugart http://europaphp.org/license
  */
-interface Testes_Testable
+interface Testes_Runable
 {
     /**
      * Runs all tests.
@@ -30,11 +30,4 @@ interface Testes_Testable
      * @return void
      */
     public function tearDown();
-    
-    /**
-     * Returns the failed assertions.
-     * 
-     * @return array
-     */
-    public function assertions();
 }

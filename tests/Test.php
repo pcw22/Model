@@ -1,6 +1,6 @@
 <?php
 
-class Test extends Testes_Suite
+class Test extends Testes_Test_Suite
 {
     public function setUp()
     {
@@ -12,6 +12,7 @@ class Test extends Testes_Suite
             )
         );
     }
+    
     /**
      * Converts the test result ot a string. Detects CLI and formats
      * according to which interface is calling the tests.

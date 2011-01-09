@@ -1,6 +1,6 @@
 <?php
 
-class Test_Model extends Testes_Test
+class Test_Model extends Testes_Test_UnitTest
 {
     /**
      * Set up the model test.

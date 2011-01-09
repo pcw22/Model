@@ -1,6 +1,6 @@
 <?php
 
-class Test_Dispatcher extends Testes_Test
+class Test_Dispatcher extends Testes_Test_UnitTest
 {
     /**
      * Ensures that the save method is properly defined and a valid object is passed.

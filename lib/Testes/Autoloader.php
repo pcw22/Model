@@ -16,6 +16,15 @@ class Testes_Autoloader
      * @var string
      */
     const NS = 'Testes';
+
+    /**
+     * The registered namespaces.
+     * 
+     * array $namespace => $path
+     * 
+     * @var array
+     */
+    protected static $paths = array();
     
     /**
      * The framework path.
@@ -23,40 +32,35 @@ class Testes_Autoloader
      * @var string
      */
     protected static $frameworkPath;
-    
+
     /**
-     * The path to the tests.
+     * Whether or not it has been registered with SPL yet.
      * 
-     * @var string
+     * @var bool
      */
-    protected static $testPath;
-    
-    /**
-     * The test NSs to use.
-     * 
-     * @var string
-     */
-    protected static $testNamespace;
+    protected static $isRegistered = false;
     
     /**
      * Registers autoloading.
      * 
      * @return void
      */
-    public static function register($testPath = null, $testNamespace = 'Test')
+    public static function register($path = null)
     {
-        // format paths
-        self::$frameworkPath = realpath(dirname(__FILE__) . '/../');
-        self::$testPath      = realpath($testPath);
-        self::$testNamespace = $testNamespace;
-        
-        // make sure the test path is valid
-        if (!self::$testPath) {
-            throw new Testes_Exception('The test path "' . $testPath . '" is not valid.');
+        // format path and check path
+        if ($path) {
+            $temp = realpath($path);
+            if (!$temp) {
+                throw new Testes_Exception('The test path "' . $path . '" is not valid.');
+            }
+
+            // register the namespace and it's associated path
+            self::$paths[$temp] = $temp;
         }
         
-        // register with spl
-        spl_autoload_register(array(self::NS . '_Autoloader', 'autoload'));
+        // set defaults
+        self::registerFramework();
+        self::registerAutoload();
     }
     
     /**
@@ -70,10 +74,42 @@ class Testes_Autoloader
         $basename = str_replace(array('_', '\\'), '/', $class) . '.php';
         
         // test for framework files
-        if (strpos($class, self::NS)) {
+        if (strpos($class, self::NS) !== false) {
             include self::$frameworkPath . '/' . $basename;
-        } elseif (strpos($class, self::$testNamespace) === 0) {
-            include self::$testPath . '/' . $basename;
+        }
+
+        // load any of the registered files
+        foreach (self::$paths as $path) {
+            $path = $path . '/' . $basename;
+            if (is_file($path)) {
+                include $path;
+                break;
+            }
+        }
+    }
+
+    /**
+     * Registeres the framework path if it hasn't been registered yet.
+     * 
+     * @return void
+     */
+    protected static function registerFramework()
+    {
+        if (!self::$frameworkPath) {
+            self::$frameworkPath = realpath(dirname(__FILE__) . '/../');
+        }
+    }
+
+    /**
+     * Registeres autoloading if it hasn't been registered yet.
+     * 
+     * @return void
+     */
+    protected static function registerAutoload()
+    {
+        if (!self::$isRegistered) {
+            spl_autoload_register(array(self::NS . '_Autoloader', 'autoload'));
+            self::$isRegistered = true;
         }
     }
 }

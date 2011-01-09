@@ -9,7 +9,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-abstract class Testes_Suite implements Testes_Testable, Iterator, Countable
+abstract class Testes_Suite implements Testes_Test_Testable, Iterator, Countable
 {
     /**
      * Contains all failed assertions.
@@ -23,14 +23,14 @@ abstract class Testes_Suite implements Testes_Testable, Iterator, Countable
      * 
      * @var array
      */
-    protected $tests = array();
-    
+    protected $classes = array();
+
     /**
-     * Constructs the test suite and adds all testable class instances.
+     * Returns the available classes from the files in the current directory.
      * 
-     * @return Testes_Suite
+     * @return array
      */
-    final public function __construct()
+    public function getClasses()
     {
         // reflection for getting path and class information
         $self = new ReflectionClass($this);
@@ -43,46 +43,19 @@ abstract class Testes_Suite implements Testes_Testable, Iterator, Countable
         $namespace = $self->getName();
         
         // load each file in the suite by convention
+        $classes = array();
         foreach (new DirectoryIterator($path) as $file) {
             if ($file->isDir()) {
                 continue;
             }
             
             // add the test
-            $class = str_replace('.php', '', $file->getBasename());
-            $class = $namespace . '_' . $class;
-            $this->addTest(new $class);
+            $class     = str_replace('.php', '', $file->getBasename());
+            $class     = $namespace . '_' . $class;
+            $classes[] = $class;
         }
-    }
-    
-    /**
-     * Runs all tests in the suite. Also handles tears down the suite and
-     * failed test before re-throwing the exception.
-     * 
-     * @return Testes_Suite
-     */
-    final public function run()
-    {
-        $this->setUp();
-        foreach ($this as $test) {
-            $test->setUp();
-            try {
-                $test->run();
-                $this->assertions = array_merge($this->assertions, $test->assertions());
-            } catch (Testes_FatalAssertion $e) {
-                $this->assertions[] = $e;
-                $test->tearDown();
-                $this->tearDown();
-                return $this;
-            } catch (Exception $e) {
-                $test->tearDown();
-                $this->tearDown();
-                throw $e;
-            }
-            $test->tearDown();
-        }
-        $this->tearDown();
-        return $this;
+
+        return $classes;
     }
     
     /**
@@ -122,7 +95,7 @@ abstract class Testes_Suite implements Testes_Testable, Iterator, Countable
      */
     public function current()
     {
-        return current($this->tests);
+        return current($this->classes);
     }
     
     /**
@@ -132,7 +105,7 @@ abstract class Testes_Suite implements Testes_Testable, Iterator, Countable
      */
     public function key()
     {
-        return key($this->tests);
+        return key($this->classes);
     }
     
     /**
@@ -142,7 +115,7 @@ abstract class Testes_Suite implements Testes_Testable, Iterator, Countable
      */
     public function next()
     {
-        next($this->tests);
+        next($this->classes);
     }
     
     /**
@@ -152,7 +125,7 @@ abstract class Testes_Suite implements Testes_Testable, Iterator, Countable
      */
     public function rewind()
     {
-        reset($this->tests);
+        reset($this->classes);
     }
     
     /**
@@ -172,29 +145,6 @@ abstract class Testes_Suite implements Testes_Testable, Iterator, Countable
      */
     public function count()
     {
-        return count($this->tests);
-    }
-    
-    /**
-     * Returns the passed tests.
-     * 
-     * @return array
-     */
-    public function assertions()
-    {
-        return $this->assertions;
-    }
-    
-    /**
-     * Adds a test to run.
-     * 
-     * @param Testes_Testable $test The test to add.
-     * 
-     * @return Testes_Testable
-     */
-    protected function addTest(Testes_Testable $test)
-    {
-        $this->tests[] = $test;
-        return $this;
+        return count($this->classes);
     }
 }
