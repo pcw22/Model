@@ -1,6 +1,6 @@
 <?php
 
-class Test_Dispatcher extends Testes_Test_UnitTest
+class Test_Dispatcher extends Testes_UnitTest_Test
 {
     /**
      * Ensures that the save method is properly defined and a valid object is passed.
@@ -9,11 +9,11 @@ class Test_Dispatcher extends Testes_Test_UnitTest
      */
     public function testSave()
     {
-        $mock = new Model_Dispatcher(new Mock_Content, 'Content');
+        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         // try saving of good instances
         try {
-            $mock->save(new Content);
+            $mock->save(new Provider_Content);
             $mock->save(array());
         } catch (Exception $e) {
             $this->assert(false, 'Could not save with message: ' . $e->getMessage());
@@ -27,11 +27,11 @@ class Test_Dispatcher extends Testes_Test_UnitTest
      */
     public function testInsert()
     {
-        $mock = new Model_Dispatcher(new Mock_Content, 'Content');
+        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         // try saving of good instances
         try {
-            $mock->insert(new Content);
+            $mock->insert(new Provider_Content);
             $mock->insert(array());
         } catch (Exception $e) {
             $this->assert(false, 'Could not insert with message: ' . $e->getMessage());
@@ -45,11 +45,11 @@ class Test_Dispatcher extends Testes_Test_UnitTest
      */
     public function testUpdate()
     {
-        $mock = new Model_Dispatcher(new Mock_Content, 'Content');
+        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         // try saving of good instances
         try {
-            $mock->update(new Content);
+            $mock->update(new Provider_Content);
             $mock->update(array());
         } catch (Exception $e) {
             $this->assert(false, 'Could not update with message: ' . $e->getMessage());
@@ -63,11 +63,11 @@ class Test_Dispatcher extends Testes_Test_UnitTest
      */
     public function testRemove()
     {
-        $mock = new Model_Dispatcher(new Mock_Content, 'Content');
+        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         // try saving of good instances
         try {
-            $mock->remove(new Content);
+            $mock->remove(new Provider_Content);
             $mock->remove(array());
         } catch (Exception $e) {
             $this->assert(false, 'Could not remove with message: ' . $e->getMessage());
@@ -87,6 +87,6 @@ class Test_Dispatcher extends Testes_Test_UnitTest
         $mock->findById(2);
         $mock->findById(2);
         
-        $this->assert(Mock_Content::$called === 2, 'Caching did not takeover on Mock_Content->findById().');
+        $this->assert(Provider_Mock_Content::$called === 2, 'Caching did not takeover on Provider_Mock_Content->findById().');
     }
 }

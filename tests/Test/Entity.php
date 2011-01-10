@@ -1,6 +1,6 @@
 <?php
 
-class Test_Entity extends Testes_Test_UnitTest
+class Test_Entity extends Testes_UnitTest_Test
 {
     /**
      * Sets up the entity test.
@@ -20,7 +20,7 @@ class Test_Entity extends Testes_Test_UnitTest
     public function testConstruction()
     {
         $import  = array('id' => true);
-        $content = new Content($import);
+        $content = new Provider_Content($import);
         
         // test array filling
         $this->assert($content->id === true, 'The id was not set.');
@@ -28,14 +28,14 @@ class Test_Entity extends Testes_Test_UnitTest
     
     public function testAliasing()
     {
-        $content     = new Content;
+        $content     = new Provider_Content;
         $content->id = 'aliastest';
         $this->assert($content->_id === 'aliastest', 'Aliasing is not working.');
     }
     
     public function testExists()
     {
-        $content      = new Content;
+        $content      = new Provider_Content;
         $content->_id = 'blacksheep';
         $this->assert($content->exists(), 'After setting an id, the entity should exist.');
     }
@@ -63,7 +63,7 @@ class Test_Entity extends Testes_Test_UnitTest
         
         // mock objects
         $mock     = Model::get()->content;
-        $content1 = new Content;
+        $content1 = new Provider_Content;
         $content2 = array();
         
         // save once to insert, save twice to update
@@ -77,8 +77,8 @@ class Test_Entity extends Testes_Test_UnitTest
         $content2 = $mock->remove($content2);
         
         // make sure valid instances were returned
-        $this->assert($content1 instanceof Content, 'An instance is not returned when saving an instance');
-        $this->assert($content2 instanceof Content, 'An instance is not returned when saving an array.');
+        $this->assert($content1 instanceof Provider_Content, 'An instance is not returned when saving an instance');
+        $this->assert($content2 instanceof Provider_Content, 'An instance is not returned when saving an array.');
         
         // assert events
         foreach ($events as $event) {

@@ -1,121 +1,58 @@
 <?php
 
 /**
- * Base test calss. The subclasses only need implement the run method.
+ * Basic class for any type of test (benchmark, unit test).
  * 
- * @category UnitTesting
+ * @category Testing
  * @package  Testes
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2010 Trey Shugart
  */
-abstract class Testes_Test implements Testes_Testable
+abstract class Testes_Test implements Testes_Runable
 {
     /**
-     * The default assertion code.
-     * 
-     * @var int
-     */
-    const PREFIX = 'test';
-    
-    /**
-     * The failed assertion list.
-     * 
-     * @var array
-     */
-    protected $assertions = array();
-    
-    /**
-     * Constructs the test and adds test methods.
-     * 
-     * @return Testes_Test
-     */
-    public function __construct()
-    {
-        $self = new ReflectionClass($this);
-        foreach ($self->getMethods() as $method) {
-            if (!$method->isPublic() || strpos($method->getName(), self::PREFIX) !== 0) {
-                continue;
-            }
-            $this->tests[] = $method->getName();
-        }
-    }
-    
-    /**
-     * Runs all test methods.
-     * 
-     * @return Testes_Test
-     */
-    public function run()
-    {
-        $this->setUp();
-        foreach ($this->tests as $test) {
-            $this->$test();
-        }
-        $this->tearDown();
-        return $this;
-    }
-    
-    /**
-     * Sets up the test.
-     * 
-     * @return void
-     */
-    public function setUp()
-    {
-        
-    }
-    
-    /**
-     * Tears down the test.
-     * 
-     * @return void
-     */
-    public function tearDown()
-    {
-        
-    }
-    
-    /**
-     * Creates an assertion.
-     * 
-     * @param bool   $expression
-     * @param string $description
-     * @param int    $code
-     * 
-     * @return Testes_Test
-     */
-    public function assert($expression, $description, $code = self::DEFAULT_CODE)
-    {
-        if (!$expression) {
-            $this->assertions[] = new Testes_Assertion($description, $code);
-        }
-        return $this;
-    }
-    
-    /**
-     * Creates an assertion.
-     * 
-     * @param bool   $expression
-     * @param string $description
-     * @param int    $code
-     * 
-     * @return Testes_Test
-     */
-    public function assertFatal($expression, $description, $code = self::DEFAULT_CODE)
-    {
-        if (!$expression) {
-            throw new Testes_FatalAssertion($description, $code);
-        }
-        return $this;
-    }
-    
-    /**
-     * Returns the failed assertions.
+     * Returns all public methods that are valid test methods.
      * 
      * @return array
      */
-    public function assertions()
+    public function getMethods()
     {
-        return $this->assertions;
+        $exclude = array();
+        $include = array();
+        $self    = new ReflectionClass($this);
+
+        // find each method to exclude
+        foreach ($self->getInterfaces() as $interface) {
+            foreach ($interface->getMethods() as $method) {
+                $exclude[] = $method->getName();
+            }
+        }
+        
+        // exclude methods
+        foreach ($self->getMethods() as $method) {
+        	// only public methods
+        	if (!$method->isPublic()) {
+        		continue;
+        	}
+            
+            // make sure it was delcared by the test class
+            if ($method->getDeclaringClass()->getName() !== get_class($this)) {
+                continue;
+            }
+
+        	// we only need the method name now
+            $method = $method->getName();
+
+            // only if it isn't in the exlusion list
+            if (in_array($method, $exclude)) {
+                continue;
+            }
+
+            // add it to the inclusion list
+            $include[] = $method;
+        }
+        
+        // return the inclusion list
+        return $include;
     }
 }

@@ -8,7 +8,12 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  (c) 2010 Trey Shugart http://europaphp.org/license
  */
-interface Testes_Benchmarkable extends Testes_Runable
+interface Testes_Benchmark_Benchmarkable extends Testes_Runable
 {
-	
+	/**
+	 * Returns the results of the benchmark.
+	 * 
+	 * @return array
+	 */
+	public function results();
 }

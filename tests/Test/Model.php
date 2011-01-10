@@ -1,6 +1,6 @@
 <?php
 
-class Test_Model extends Testes_Test_UnitTest
+class Test_Model extends Testes_UnitTest_Test
 {
     /**
      * Set up the model test.
@@ -73,7 +73,7 @@ class Test_Model extends Testes_Test_UnitTest
     public function testDriverGetting()
     {
         $this->assert(
-            Model::get()->content->getDriver() instanceof Mock_Content,
+            Model::get()->content->getDriver() instanceof Provider_Mock_Content,
             'The content adapter is the incorrect instance.'
         );
     }

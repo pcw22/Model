@@ -8,7 +8,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  (c) 2010 Trey Shugart http://europaphp.org/license
  */
-interface Testes_Testable extends Testes_Runable
+interface Testes_UnitTest_Testable extends Testes_Runable
 {
     /**
      * Returns the failed assertions.

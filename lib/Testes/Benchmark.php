@@ -1,77 +1,46 @@
 <?php
 
 /**
- * Base test calss. The subclasses only need implement the run method.
+ * Converts the output of a benchmark suite to a string.
  * 
- * @category UnitTesting
+ * @category Benchmarking
  * @package  Testes
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-abstract class Testes_Benchmark implements Testes_Benchmarkable
+class Testes_Benchmark extends Testes_Benchmark_Suite
 {
     /**
-     * The method prefix that define benchmarks.
+     * Converts the benchmark result ot a string.
      * 
-     * @var int
+     * @return string
      */
-    const PREFIX = 'benchmark';
-    
-    /**
-     * The failed assertion list.
-     * 
-     * @var array
-     */
-    protected $assertions = array();
-    
-    /**
-     * Constructs the test and adds test methods.
-     * 
-     * @return Testes_Test
-     */
-    public function __construct()
+    public function __toString()
     {
-        $self = new ReflectionClass($this);
-        foreach ($self->getMethods() as $method) {
-            if (!$method->isPublic() || strpos($method->getName(), self::PREFIX) !== 0) {
-                continue;
-            }
-            $this->tests[] = $method->getName();
+        $str = '';
+        $br  = Testes_Output::breaker();
+        $sp1 = Testes_Output::spacer(1);
+        $sp2 = Testes_Output::spacer(2);
+        $sp3 = Testes_Output::spacer(3);
+        $sp4 = Testes_Output::spacer(4);
+
+        if (!Testes_Output::isCli()) {
+            $str .= '<pre>';
         }
-    }
-    
-    /**
-     * Runs all test methods.
-     * 
-     * @return Testes_Test
-     */
-    public function run()
-    {
-        $this->setUp();
-        foreach ($this->tests as $test) {
-            $this->$test();
+
+        foreach ($this->results() as $suite => $benchmarks) {
+        	$str .= $suite . $br;
+        	foreach ($benchmarks as $benchmark => $result) {
+        		$str .= $sp2 . $benchmark . $br
+        		     .  $sp4 . 'memory' . $sp1 . ':' . $sp1 . round($result['memory'] / 1024 / 1024, 3) . ' MB' . $br
+        		     .  $sp4 . 'time' . $sp3 . ':' . $sp1 . round($result['time'], 3) . ' seconds' . $br;
+        	}
         }
-        $this->tearDown();
-        return $this;
-    }
-    
-    /**
-     * Sets up the test.
-     * 
-     * @return void
-     */
-    public function setUp()
-    {
-        
-    }
-    
-    /**
-     * Tears down the test.
-     * 
-     * @return void
-     */
-    public function tearDown()
-    {
-        
+
+        if (!Testes_Output::isCli()) {
+            $str .= '</pre>';
+        }
+
+        return $str;
     }
 }

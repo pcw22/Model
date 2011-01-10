@@ -123,7 +123,7 @@ abstract class Model_Entity implements Model_Accessible
     public function get($name)
     {
         $name = $this->unalias($name);
-        
+
         // if it isn't set yet, set it
         if (!isset($this->data[$name])) {
             $this->data[$name] = new Model_Entity_Property_Default($this);

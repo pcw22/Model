@@ -44,9 +44,9 @@ class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
         if ($this->value) {
             $array = array();
             foreach ($this->value as $k => $v) {
+                var_dump($v);
                 $array[$k] = $v->export();
             }
-            return $array;
         }
         return array();
     }

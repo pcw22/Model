@@ -26,7 +26,8 @@ abstract class Testes_Suite implements Testes_Runable, Iterator, Countable
     protected $classes = array();
 
     /**
-     * Returns the available classes from the files in the current directory.
+     * Returns only classes that are valid unit tests classes from the
+     * current test directory.
      * 
      * @return array
      */
@@ -50,9 +51,28 @@ abstract class Testes_Suite implements Testes_Runable, Iterator, Countable
             }
             
             // add the test
-            $class     = str_replace('.php', '', $file->getBasename());
-            $class     = $namespace . '_' . $class;
-            $classes[] = $class;
+            $class = str_replace('.php', '', $file->getBasename());
+            $class = $namespace . '_' . $class;
+
+            // make sure it can be added
+            $class = new ReflectionClass($class);
+            
+            // get all user defined interfaces on the current object
+            $interfaces = array();
+            foreach ($self->getInterfaces() as $iface) {
+                if ($iface->isUserDefined()) {
+                    $userInterfaces[] = $iface->getName();
+                }
+            }
+
+            // make sure the class implements those interfaces
+            foreach ($interfaces as $iface) {
+                if (!$class->implementsInterface($iface)) {
+                    continue 2;
+                }
+            }
+
+            $classes[] = $class->getName();
         }
 
         return $classes;
