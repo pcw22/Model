@@ -26,6 +26,6 @@ abstract class Testes_UnitTest extends Testes_UnitTest_Suite
                  .  $assertion->getMessage()
                  .  Testes_Output::breaker();
         }
-        return $str ? $str : 'All tests passed!';
+        return $str ? $str : 'All tests passed!' . Testes_Output::breaker();
     }
 }

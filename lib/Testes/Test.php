@@ -53,6 +53,6 @@ abstract class Testes_Test implements Testes_Runable
         }
         
         // return the inclusion list
-        return $include;
+        return array_unique($include);
     }
 }

@@ -41,6 +41,6 @@ class Testes_Benchmark extends Testes_Benchmark_Suite
             $str .= '</pre>';
         }
 
-        return $str;
+        return $str . Testes_Output::breaker();
     }
 }

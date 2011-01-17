@@ -31,8 +31,7 @@ class Testes_UnitTest_Suite extends Testes_Suite implements Testes_UnitTest_Test
         // run each test
         foreach ($this->getClasses() as $test) {
             $test = new $test;
-            $test->setUp();
-
+            
             // depending on what is asserted, we hadnle it differently
             try {
                 $test->run();
@@ -47,9 +46,6 @@ class Testes_UnitTest_Suite extends Testes_Suite implements Testes_UnitTest_Test
                 $this->tearDown();
                 throw $e;
             }
-
-            // if we get to this point, only tear down
-            $test->tearDown();
         }
 
         // tear down the suite

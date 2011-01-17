@@ -16,7 +16,7 @@ class Testes_Autoloader
      * @var string
      */
     const NS = 'Testes';
-
+    
     /**
      * The registered namespaces.
      * 
