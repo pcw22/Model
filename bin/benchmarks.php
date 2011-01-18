@@ -1,5 +1,6 @@
 <?php
 
+ini_set('memory_limit', '512M');
 error_reporting(E_ALL ^ E_STRICT);
 
 require dirname(__FILE__) . '/../lib/Model/Autoloader.php';

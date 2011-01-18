@@ -2,13 +2,23 @@
 
 class Bench_EntityHydration extends Testes_Benchmark_Test
 {
+    /**
+     * The hydration data that is set up during setUp().
+     * 
+     * @var array
+     */
 	protected $data = array(
 		'simple'     => array(),
 		'complex'    => array(),
 		'simpleset'  => array(),
 		'complexset' => array()
 	);
-
+    
+    /**
+     * Sets up hydration data for different benchmarks.
+     * 
+     * @return void
+     */
 	public function setUp()
 	{
 		$this->data['simple']     = $this->simpledata();
@@ -18,7 +28,7 @@ class Bench_EntityHydration extends Testes_Benchmark_Test
 			$this->data['complexset'][] = $this->data['complex'];
 		}
 	}
-
+    
 	public function tearDown()
 	{
 		

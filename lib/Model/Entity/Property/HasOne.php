@@ -9,7 +9,7 @@ class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
         // instantiate
         $class = $this->data['class'];
         $class = new $class($value);
-
+        
         // make sure it's a valid instance
         if (!$class instanceof Model_Entity) {
             throw new Model_Exception(
@@ -25,28 +25,15 @@ class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
     
     public function get()
     {
-        // if not initially set, do it
-        if (!$this->value) {
-            $this->set(null);
-        }
-
         // then we can just return it
         return $this->value;
     }
     
-    public function import($value)
-    {
-        $this->set($value);
-    }
-    
     public function export()
     {
-        if ($this->value) {
-            $array = array();
-            foreach ($this->value as $k => $v) {
-                var_dump($v);
-                $array[$k] = $v->export();
-            }
+        // we only export if we have data to export
+        if ($value = $this->get()) {
+            return $value->export();
         }
         return array();
     }
