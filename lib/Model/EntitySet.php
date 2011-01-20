@@ -27,12 +27,12 @@ class Model_EntitySet implements Model_Accessible
     /**
      * Constructs a new entity set. Primarily used for has many relations.
      * 
-     * @param string $class The class that represents the entities.
-     * @param mixed  $vals  The values to apply.
+     * @param string $class  The class that represents the entities.
+     * @param mixed  $values The values to apply.
      * 
      * @return Model_EntitySet
      */
-    public function __construct($class, array $values = array())
+    public function __construct($class, $values = array())
     {
         $this->class = $class;
         $this->import($values);
@@ -47,11 +47,16 @@ class Model_EntitySet implements Model_Accessible
      */
     public function import($array)
     {
-        if (is_array($array) || is_object($array)) {
-            foreach ($array as $k => $v) {
-                $this->offsetSet($k, $v);
-            }
+        // make sure the item is iterable
+        if (!is_array($array) && !is_object($array)) {
+            $array = (array) $array;
         }
+        
+        // now apply the values
+        foreach ($array as $k => $v) {
+            $this->offsetSet($k, $v);
+        }
+        
         return $this;
     }
     

@@ -234,6 +234,18 @@ class Model_Dispatcher
         // otherwise, get the result from the method
         $value = call_user_func_array(array($this->_driver, $name), $args);
         
+        // enforce return value type
+        $reflector = new Model_MethodReflector($this->_driver, $name);
+        if (!$reflector->isValidReturnValue($value)) {
+            throw new Model_Exception(
+                'The specified value was not a valid return type. Value: '
+                . gettype($value)
+                . '. Type(s): '
+                . implode(', ', $reflector->getReturnTypes())
+                . '.'
+            );
+        }
+        
         // attempt to cache the value using the key
         $this->_toCache($key, $value);
         
