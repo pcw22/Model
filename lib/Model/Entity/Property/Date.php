@@ -10,7 +10,7 @@ class Model_Entity_Property_Date extends Model_Entity_Property_Default
 
     public static $defaultTimezone = 'GMT';
 
-    public function init()
+    public function __construct()
     {
         $this->format   = self::$defaultFormat;
         $this->timezone = self::$defaultTimezone;

@@ -8,6 +8,6 @@ class Model_Entity_Property_HasMany extends Model_Entity_Property_HasOne
         $this->checkForClass();
 
         // then set the value in the set
-        $this->value = new Model_EntitySet($this->data['class'], $value);
+        $this->value = new Model_EntitySet($this->class, $value);
     }
 }

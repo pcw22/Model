@@ -2,12 +2,19 @@
 
 class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
 {
+    protected $class;
+    
+    public function __construct($class)
+    {
+        $this->class = $class;
+    }
+    
     public function set($value)
     {
         $this->checkForClass();
 
         // instantiate
-        $class = $this->data['class'];
+        $class = $this->class;
         $class = new $class($value);
         
         // make sure it's a valid instance
@@ -41,7 +48,7 @@ class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
     protected function checkForClass()
     {
         // make sure a proper class was set
-        if (!isset($this->data['class'])) {
+        if (!isset($this->class)) {
             throw new Model_Exception(
                 'Cannot instantiate has-one relationship for "'
                 . get_class($this->entity)
