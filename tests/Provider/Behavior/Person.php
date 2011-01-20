@@ -4,7 +4,6 @@ class Provider_Behavior_Person implements Model_Entity_BehaviorInterface
 {
     public function init(Model_Entity $entity)
     {
-        $entity->set('name', new Model_Entity_Property_Name($entity));
         $entity->set('dob', new Model_Entity_Property_Date($entity));
         $entity->set('created', new Model_Entity_Property_Date($entity));
         $entity->set('updated', new Model_Entity_Property_Date($entity));

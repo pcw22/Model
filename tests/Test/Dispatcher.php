@@ -7,7 +7,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      * 
      * @return void
      */
-    public function testSave()
+    public function testSaveMethodArgumentDefinition()
     {
         $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
@@ -25,7 +25,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      * 
      * @return void
      */
-    public function testInsert()
+    public function testInsertMethodArgumentDefinition()
     {
         $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
@@ -43,7 +43,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      * 
      * @return void
      */
-    public function testUpdate()
+    public function testUpdateMethodArgumentDefinition()
     {
         $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
@@ -61,7 +61,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      * 
      * @return void
      */
-    public function testRemove()
+    public function testRemoveMethodArgumentDefinition()
     {
         $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
@@ -75,18 +75,41 @@ class Test_Dispatcher extends Testes_UnitTest_Test
     }
     
     /**
+     * Tests to make sure the return value.
+     * 
+     * @return void
+     */
+    public function testReturnValueDetection()
+    {
+        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
+        
+        try {
+            $mock->findById(1);
+        } catch (Model_Exception $e) {
+            $this->assert(
+                 false,
+                'The return value of "Provider_Content->findById()" was not detected with message: '
+                . $e->getMessage()
+            );
+        }
+    }
+    
+    /**
      * Tests to make sure caching takes over when methods are called more than once.
      * 
      * @return void
      */
-    public function testCaching()
+    public function testAutomatedCaching()
     {
-        $mock = Model::get()->content;
+        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content', new Model_Cache_Static);
         $mock->findById(1);
         $mock->findById(1);
         $mock->findById(2);
         $mock->findById(2);
         
-        $this->assert(Provider_Mock_Content::$called === 2, 'Caching did not takeover on Provider_Mock_Content->findById().');
+        $this->assert(
+            Provider_Mock_Content::$called === 2,
+            'Caching did not takeover on Provider_Mock_Content->findById().'
+        );
     }
 }
