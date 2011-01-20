@@ -8,6 +8,6 @@ class Provider_Behavior_Person implements Model_Entity_BehaviorInterface
         $entity->set('created', new Model_Entity_Property_Date);
         $entity->set('updated', new Model_Entity_Property_Date);
         $entity->set('homepage', new Model_Entity_Property_HasOne('Provider_Content'));
-        $entity->set('friends', new Model_Entity_Property_HasMany('Provider_User'));
+        $entity->set('friends', new Model_Entity_Property_HasMany('Provider_Friend'));
     }
 }

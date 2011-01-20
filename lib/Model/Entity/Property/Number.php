@@ -10,7 +10,7 @@ class Model_Entity_Property_Number extends Model_Entity_Property_Default
         $this->max = $max;
     }
 
-    public function set($name)
+    public function set($number)
     {
         $number = (int) $number;
         if (is_numeric($this->min) && $this->min > $number) {
