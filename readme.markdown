@@ -120,6 +120,11 @@ Mysql driver:
         }
     }
 
+Strongly Typed Driver Methods
+-----------------------------
+
+If a docblock is specified for a driver method and it contains a `@return` tag, the actual returned value is captured by the dispatcher and checked against the specified return values in the block. Return values can be separated by a pipe ("|") as defined in the PHPDoc documentation.
+
 Configuration
 -------------
 
