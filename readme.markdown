@@ -361,7 +361,7 @@ We can set this to a different property if we want.
 
     $user->set('name', new MyCustomProperty);
 
-When we call `__get()` or `__set()` on an entity, it implicitly calls `get()` and `set()` recpectively on the specified property object.
+When we call `__get()` or `__set()` on an entity, it implicitly calls `get()` and `set()`, respectively, on the specified property object.
 
     $user->name === $user->get('name')->get();
 
@@ -394,8 +394,8 @@ You can set up a behavior to automate this:
     {
         public function init(Model_Entity $entity)
         {
-            $entity->set('created', new Model_Entity_Property_Date($entity));
-            $entity->set('updated', new Model_Entity_Property_Date($entity));
+            $entity->set('created', new Model_Entity_Property_Date);
+            $entity->set('updated', new Model_Entity_Property_Date);
         }
     }
 
