@@ -307,8 +307,8 @@ You can also pass nearly any argument to the constructor of an entity.
     $user = new User($user);
     $user->name; // "The Dude"
 
-Entity Ids
-----------
+Entity Ids and Aliasing
+-----------------------
 
 By default, an entity uses a primary key called `_id`. If you want to use a different one, all you have to do is alias it:
 
