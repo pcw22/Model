@@ -1,14 +1,17 @@
 <?php
 
+namespace Model\Cache;
+use Model;
+
 /**
  * A cache handler that can use multiple cache sources.
  * 
  * @category Cache
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_Cache_Cascade implements Model_CacheInterface
+class Cascade implements Model\CacheInterface
 {
     /**
      * The cache sources being used.
@@ -24,7 +27,7 @@ class Model_Cache_Cascade implements Model_CacheInterface
      */
     protected $config = array(
         'drivers' => array(
-            'Model_Cache_Static' => array()
+            'Static' => array()
         )
     );
     
@@ -33,7 +36,7 @@ class Model_Cache_Cascade implements Model_CacheInterface
      * 
      * @param array $config The cascade configuration.
      * 
-     * @return Model_Cache_Cascade
+     * @return \Model\Cache\Cascade
      */
     public function __construct(array $config = array())
     {
@@ -49,14 +52,13 @@ class Model_Cache_Cascade implements Model_CacheInterface
      * @param string $key   The cache key.
      * @param mixed  $value The cache value.
      * 
-     * @return Model_Cache_Driver_Cascade
+     * @return void
      */
     public function set($key, $value)
     {
         foreach ($this->cache as $cache) {
             $cache->set($key, $value);
         }
-        return $this;
     }
     
     /**
@@ -74,5 +76,36 @@ class Model_Cache_Cascade implements Model_CacheInterface
             }
         }
         return null;
+    }
+    
+    /**
+     * Checks to see if the specified cache item exists.
+     * 
+     * @param string $key The key to check for.
+     * 
+     * @return bool
+     */
+    public function exists($key)
+    {
+        foreach ($this->cache as $cache) {
+            if ($cache->exists($key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Removes the item with the specified key.
+     * 
+     * @param string $key The key of the item to remove.
+     * 
+     * @return void
+     */
+    public function remove($key)
+    {
+        foreach ($this->cache as $cache) {
+            $cache->remove($key);
+        }
     }
 }

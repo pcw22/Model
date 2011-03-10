@@ -1,14 +1,16 @@
 <?php
 
+namespace Model;
+
 /**
  * The class that represents a set of entities.
  * 
  * @category Entities
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_EntitySet implements Model_Accessible
+class EntitySet implements Accessible
 {
     /**
      * The class used to represent each entity in the set.
@@ -18,7 +20,7 @@ class Model_EntitySet implements Model_Accessible
     protected $class;
     
     /**
-     * The data containing each entitie.
+     * The data containing each entity.
      * 
      * @var array
      */
@@ -30,7 +32,7 @@ class Model_EntitySet implements Model_Accessible
      * @param string $class  The class that represents the entities.
      * @param mixed  $values The values to apply.
      * 
-     * @return Model_EntitySet
+     * @return \Model\EntitySet
      */
     public function __construct($class, $values = array())
     {
@@ -43,7 +45,7 @@ class Model_EntitySet implements Model_Accessible
      * 
      * @param mixed $array The values to import.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function import($array)
     {
@@ -65,7 +67,7 @@ class Model_EntitySet implements Model_Accessible
      * 
      * @param mixed $vals The values to automate the setting of.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function export()
     {
@@ -92,7 +94,7 @@ class Model_EntitySet implements Model_Accessible
     public function walk($callback, array &$userdata = array())
     {
         if (!is_callable($callback)) {
-            throw new Model_Exception('The callback specified to Model_Entity->walk() is not callable.');
+            throw new Exception('The callback specified to \Model\Entity->walk() is not callable.');
         }
         
         // just call it without returning
@@ -111,7 +113,7 @@ class Model_EntitySet implements Model_Accessible
      * @param mixed $offset The offset to set.
      * @param mixed $value  The value to set.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function offsetSet($offset, $value)
     {
@@ -168,7 +170,7 @@ class Model_EntitySet implements Model_Accessible
      * 
      * @param mixed $offset The offset to unset.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function offsetUnset($offset)
     {
@@ -191,7 +193,7 @@ class Model_EntitySet implements Model_Accessible
     /**
      * Returns the current element.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function current()
     {
@@ -211,7 +213,7 @@ class Model_EntitySet implements Model_Accessible
     /**
      * Moves to the next element.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function next()
     {
@@ -222,7 +224,7 @@ class Model_EntitySet implements Model_Accessible
     /**
      * Resets to the first element.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function rewind()
     {
@@ -238,5 +240,27 @@ class Model_EntitySet implements Model_Accessible
     public function valid()
     {
         return !is_null($this->key());
+    }
+    
+    /**
+     * Serializes the data and returns it.
+     * 
+     * @return string
+     */
+    public function serialize()
+    {
+        return serialize($this->export());
+    }
+    
+    /**
+     * Unserializes and sets the specified data.
+     * 
+     * @param string The serialized string to unserialize and set.
+     * 
+     * @return void
+     */
+    public function unserialize($data)
+    {
+        $this->import(unserialize($data));
     }
 }

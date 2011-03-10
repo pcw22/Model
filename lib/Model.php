@@ -18,11 +18,11 @@ class Model
     protected $config = array();
     
     /**
-     * The named drivers that have been accessed.
+     * The named repositories that have been accessed.
      * 
      * @var array
      */
-    protected $drivers = array();
+    protected $repositories = array();
     
     /**
      * The named instances that have been instantiated.
@@ -44,11 +44,11 @@ class Model
      * @var array
      */
     protected static $defaultConfig = array(
-        'driver'       => null,
-        'driver.class' => ':driver_:name',
-        'entity.class' => ':name',
-        'cache.class'  => null,
-        'cache.args'   => array()
+        'repository.class' => '\:nameRepository',
+        'repository.args'  => array(),
+        'entity.class'     => '\:nameEntity',
+        'cache.class'      => null,
+        'cache.args'       => array()
     );
     
     /**
@@ -61,21 +61,16 @@ class Model
     public function __construct(array $config = array())
     {
         $this->config = array_merge_recursive(self::$defaultConfig, $this->config, $config);
-        if (!isset($this->config['driver']) || !$this->config['driver']) {
-            throw new Model_Exception(
-                'The driver configuration variable must be specified.'
-            );
-        }
     }
     
     /**
-     * Returns a new instance of the specified driver and passes the given
+     * Returns a new instance of the specified repository and passes the given
      * arguments to the constructor.
      * 
-     * @param string $name The driver to get.
+     * @param string $name The repository to get.
      * @param array  $args The arguments passed.
      * 
-     * @return Model_Driver
+     * @return \Model\Repository
      */
     public function __call($name, array $args = array())
     {
@@ -83,62 +78,61 @@ class Model
     }
     
     /**
-     * Returns the specified driver. If the driver has already been instantiated
+     * Returns the specified repository. If the repository has already been instantiated
      * the cached instance is returned.
      * 
-     * @param string $name The driver to return.
+     * @param string $name The repository to return.
      * 
-     * @return Model_Driver
+     * @return \Model\Repository
      */
     public function __get($name)
     {
-        if (isset($this->drivers[$name])) {
-            return $this->drivers[$name];
+        if (isset($this->repositories[$name])) {
+            return $this->repositories[$name];
         }
         return $this->getDispatcher($name);
     }
     
     /**
-     * Returns the specified driver.
+     * Returns the specified repository.
      * 
-     * @param string $name The driver name.
+     * @param string $name The repository name.
      * 
-     * @return Model_Driver
+     * @return \Model\Repository
      */
     public function getDispatcher($name, array $args = array())
     {
         // configure the dispatcher
-        $dispatcher = new Model_Dispatcher(
-            $this->getDriverInstance($name, $args),
+        $dispatcher = new \Model\Dispatcher(
+            $this->getRepositoryInstance($name, $args),
             $this->formatEntityClass($name),
             $this->getCacheInstance($name)
         );
         
         // cache it
-        $this->drivers[$name] = $dispatcher;
+        $this->repositories[$name] = $dispatcher;
         
         // and return it
         return $dispatcher;
     }
     
     /**
-     * Formats the driver name.
+     * Formats the repository name.
      * 
-     * @param string $name The driver name.
+     * @param string $name The repository name.
      * 
      * @return string
      */
-    protected function formatDriverClass($name)
+    protected function formatRepositoryClass($name)
     {
-        $class = str_replace(':name', ucfirst($name), $this->config['driver.class']);
-        $class = str_replace(':driver', ucfirst($this->config['driver']), $class);
+        $class = str_replace(':name', ucfirst($name), $this->config['repository.class']);
         return $class;
     }
     
     /**
      * Formats the entity classname and returns it.
      * 
-     * @param string $name The driver name.
+     * @param string $name The repository name.
      * 
      * @return string
      */
@@ -151,33 +145,32 @@ class Model
     /**
      * Formats the cache classname and returns it.
      * 
-     * @param string $name The driver name.
+     * @param string $name The repository name.
      * 
      * @return string
      */
     protected function formatCacheClass($name)
     {
         $class = str_replace(':name', ucfirst($name), $this->config['cache.class']);
-        $class = str_replace(':driver', ucfirst($this->config['driver']), $class);
         return $class;
     }
     
     /**
-     * Returns the driver instance for the specified name.
+     * Returns the repository instance for the specified name.
      * 
-     * @param string $name The unformatted name of the driver to return.
-     * @param array  $args The arguments to pass to the driver, if any.
+     * @param string $name The unformatted name of the repository to return.
+     * @param array  $args The arguments to pass to the repository, if any.
      * 
-     * @return Model_DriverInterface
+     * @return \Model\RepositoryInterface
      */
-    protected function getDriverInstance($name, array $args = array())
+    protected function getRepositoryInstance($name, array $args = array())
     {
-        $driver = $this->formatDriverClass($name);
-        $driver = new ReflectionClass($driver);
-        if ($driver->hasMethod('__construct')) {
-            return $driver->newInstanceArgs($args);
+        $repository = $this->formatRepositoryClass($name);
+        $repository = new \ReflectionClass($repository);
+        if ($repository->hasMethod('__construct')) {
+            return $repository->newInstanceArgs($args ? $args : $this->config['repository.args']);
         }
-        return $driver->newInstance();
+        return $repository->newInstance();
     }
     
     /**
@@ -189,7 +182,7 @@ class Model
     protected function getCacheInstance($name)
     {
         if ($cache = $this->formatCacheClass($name)) {
-            $cache = new ReflectionClass($cache);
+            $cache = new \ReflectionClass($cache);
             if ($cache->hasMethod('__construct')) {
                 return $cache->newInstanceArgs($this->config['cache.args']);
             }
@@ -228,7 +221,7 @@ class Model
             $name = self::getDefault();
         }
         if (!self::has($name)) {
-            self::$instances[$name] = new self;
+            self::$instances[$name] = new static;
         }
         return self::$instances[$name];
     }

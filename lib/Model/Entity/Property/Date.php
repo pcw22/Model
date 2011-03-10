@@ -1,14 +1,16 @@
 <?php
 
+namespace Model\Entity\Property;
+
 /**
  * A date property for manipulating date fields.
  * 
  * @category Properties
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_Entity_Property_Date extends Model_Entity_Property_Default
+class Date extends Base
 {
     /**
      * The date format.
@@ -27,15 +29,16 @@ class Model_Entity_Property_Date extends Model_Entity_Property_Default
     /**
      * Constructs a new date property and sets a default format and timezone.
      * 
-     * @param
+     * @param string $format   The PHP date format to use.
+     * @param string $timezone The PHP timezone to use.
      * 
-     * @return Model_Entity_Property_Date
+     * @return \Model\Entity\Property\Date
      */
     public function __construct($format = 'Y-m-d H:i:s', $timezone = 'GMT')
     {
         $this->format   = $format;
         $this->timezone = $timezone;
-        $this->value    = new DateTime('now', new DateTimeZone($this->timezone));
+        $this->value    = new \DateTime('now', new \DateTimeZone($this->timezone));
     }
     
     /**
@@ -47,7 +50,7 @@ class Model_Entity_Property_Date extends Model_Entity_Property_Default
      */
     public function set($date)
     {
-        $this->value = new DateTime($date, new DateTimeZone($this->timezone));
+        $this->value = new \DateTime($date, new \DateTimeZone($this->timezone));
     }
 
     /**

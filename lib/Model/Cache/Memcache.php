@@ -1,14 +1,17 @@
 <?php
 
+namespace Model\Cache;
+use Model;
+
 /**
  * The Memcache driver.
  * 
  * @category Cache
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_Cache_Memcache implements Model_CacheInterface
+class Memcache implements Model\CacheInterface
 {
     /**
      * The default Memcache configuration.
@@ -36,7 +39,7 @@ class Model_Cache_Memcache implements Model_CacheInterface
      * 
      * @param array $config The Memcache configuration.
      * 
-     * @return Model_Cache_Driver_Memcache
+     * @return \Model\Cache\Driver\Memcache
      */
     public function __construct(array $config = array())
     {
@@ -53,12 +56,11 @@ class Model_Cache_Memcache implements Model_CacheInterface
      * @param string $key   The cache key.
      * @param mixed  $value The cache value.
      * 
-     * @return Model_Cache_Driver_Memcache
+     * @return void
      */
     public function set($key, $value)
     {
         $this->memcache->add($key, $value);
-        return $this;
     }
     
     /**
@@ -71,5 +73,29 @@ class Model_Cache_Memcache implements Model_CacheInterface
     public function get($key)
     {
         return $this->memcache->get($key);
+    }
+    
+    /**
+     * Checks to see if the specified cache item exists.
+     * 
+     * @param string $key The key to check for.
+     * 
+     * @return bool
+     */
+    public function exists($key)
+    {
+        return $this->memcache->get($key) !== false;
+    }
+    
+    /**
+     * Removes the item with the specified key.
+     * 
+     * @param string $key The key of the item to remove.
+     * 
+     * @return \Model\CacheInterface
+     */
+    public function remove($key)
+    {
+        $this->memcache->delete($key);
     }
 }

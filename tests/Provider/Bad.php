@@ -1,6 +1,8 @@
 <?php
 
-class Provider_Bad extends Model_Entity
+use Model\Entity;
+
+class Provider_Bad extends Entity
 {
     
 }

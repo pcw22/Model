@@ -1,83 +1,115 @@
 <?php
 
+namespace Model;
+
 /**
- * The main driver class. All model drivers should extend this class.
+ * The main repository class. All model repositorys should extend this class.
  * 
- * @category Drivers
+ * @category Repositorys
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_Dispatcher
+class Dispatcher
 {
     /**
-     * The specific driver that the dispatcher is using.
+     * The specific repository that the dispatcher is using.
      * 
-     * @var Model_DriverInterface
+     * @var \Model\RepositoryInterface
      */
-    private $_driver;
+    private $repository;
     
     /**
      * The entity name to use.
      * 
      * @var string
      */
-    private $_entity;
+    private $entity;
     
     /**
-     * The cache driver, if any, to use for caching.
+     * The cache repository, if any, to use for caching.
      * 
-     * @var Model_Cache_DriverInterface
+     * @var \Model\Cache\RepositoryInterface
      */
-    private $_cache;
+    private $cache;
     
     /**
-     * Constructs a new dispatcher and sets the driver to use.
+     * Constructs a new dispatcher and sets the repository to use.
      * 
-     * @param Model_DriverInterface $driver The driver to use.
+     * @param \Model\RepositoryInterface $repository The repository to use.
      * 
-     * @return Model_Dispatcher
+     * @return \Model\Dispatcher
      */
-    public function __construct(Model_DriverInterface $driver, $entity, Model_CacheInterface $cache = null)
+    public function __construct(RepositoryInterface $repository, $entity, CacheInterface $cache = null)
     {
-        $this->_driver = $driver;
-        $this->_entity = $entity;
-        $this->_cache  = $cache;
+        $this->repository = $repository;
+        $this->entity = $entity;
+        $this->cache  = $cache;
     }
     
     /**
-     * Calls driver methods and automates caching.
+     * Calls repository methods and automates caching.
      * 
-     * @param string $name The driver method being called.
+     * @param string $name The repository method being called.
      * @param array  $args The arguments passed to the method.
      * 
      * @return mixed
      */
     public function __call($name, array $args = array())
     {
-        // handle other methods
-        if (method_exists($this->_driver, $name)) {
-            return $this->_call($name, $args);
+        if (!method_exists($this->repository, $name)) {
+            throw new Exception(
+                'Call to undefined repository method: '
+                . get_class($this->repository)
+                . '->'
+                . $name
+                . '.'
+            );
         }
         
-        // method doesn't exist
-        throw new Model_Exception(
-            'Call to undefined driver method: '
-            . get_class($this->_driver)
-            . '->'
-            . $name
-            . '.'
-        );
+        // call the method and enforce a return type
+        $value     = call_user_func_array(array($this->repository, $name), $args);
+        $reflector = new MethodReflector($this->repository, $name);
+        if (!$reflector->isValidReturnValue($value)) {
+            throw new Exception(
+                'The specified value was not a valid return type. Value: '
+                . gettype($value)
+                . '. Type(s): '
+                . implode(', ', $reflector->getReturnTypes())
+                . '.'
+            );
+        }
+        
+        return $value;
     }
     
     /**
-     * Returns the driver instance that the dispatcher is using.
+     * Returns the repository instance that the dispatcher is using.
      * 
-     * @return Model_DriverInterface
+     * @return \Model\RepositoryInterface
      */
-    public function getDriver()
+    public function getRepository()
     {
-        return $this->_driver;
+        return $this->repository;
+    }
+    
+    /**
+     * Acts as a proxy to automate cache insertion, updating and retrieval.
+     * 
+     * @param mixed $id The id to get the object by.
+     * 
+     * @return \Model\Entity
+     */
+    public function findById($id)
+    {
+        if ($item = $this->fromCache($id)) {
+            return $item;
+        }
+        
+        $item = $this->repository->findById($id);
+        $item = $this->ensureEntity($item);
+        $this->toCache($id, $item);
+        return $item;
     }
     
     /**
@@ -85,49 +117,39 @@ class Model_Dispatcher
      * 
      * @param mixed $entity The entity being saved.
      * 
-     * @return Model_Driver
+     * @return \Model\Repository
      */
     public function save($entity)
     {
-        // ensure an entity is used
-        $entity = $this->_ensureEntity($entity);
-        
-        // if an id is set, update, if not, insert
+        $entity = $this->ensureEntity($entity);
         if ($entity->exists()) {
             $this->update($entity);
         } else {
             $this->insert($entity);
         }
-        
-        // return the entity
         return $entity;
     }
     
     /**
-     * Calls the implemented insert method and calls events.
+     * Calls the implemented insert method and calls events. The insert method should return
+     * an id to set on the entity. This ensure's that the entity will have an id when it is
+     * inserted.
      * 
      * @param mixed $entity The entity to insert.
      * 
-     * @return Model_Driver
+     * @return \Model\Repository
      */
     public function insert($entity)
     {
-        // ensure an entity is used
-        $entity = $this->_ensureEntity($entity);
+        $entity = $this->ensureEntity($entity);
+        $entity->preSave();
+        $entity->preInsert();
         
-        // ensure validity
-        if ($entity->preSave() === false || $entity->preInsert() === false) {
-            throw new Model_Exception('The entity "' . get_class($entity) . '" was unable to be updated because it is not valid.');
-        }
+        $entity->id = $this->repository->insert($entity);
+        $this->toCache($entity->id, $entity);
         
-        // call driver method
-        $this->_driver->insert($entity);
-        
-        // post-save events
         $entity->postSave();
         $entity->postInsert();
-        
-        // return the entity
         return $entity;
         
     }
@@ -137,149 +159,136 @@ class Model_Dispatcher
      * 
      * @param mixed $entity The entity to insert.
      * 
-     * @return Model_Driver
+     * @return \Model\Repository
      */
     public function update($entity)
     {
-        // ensure an entity is used
-        $entity = $this->_ensureEntity($entity);
+        $entity = $this->ensureEntity($entity);
+        $entity->preSave();
+        $entity->preUpdate();
         
-        // ensure validity
-        if ($entity->preSave() === false || $entity->preUpdate() === false) {
-            throw new Model_Exception('The entity "' . get_class($entity) . '" was unable to be updated because it is not valid.');
-        }
+        $this->repository->update($entity);
+        $this->toCache($entity->id, $entity);
         
-        // call driver method
-        $this->_driver->update($entity);
-        
-        // post-save events
         $entity->postSave();
         $entity->postUpdate();
-        
-        // return the entity
         return $entity;
     }
     
     /**
      * Calls the implemented remove method and calls events.
      * 
-     * @param Model_Entity $entity The entity to remove.
+     * @param \Model\Entity $entity The entity to remove.
      * 
-     * @return Model_Driver
+     * @return \Model\Repository
      */
     public function remove($entity)
     {
-        // ensure an entity is used
-        $entity = $this->_ensureEntity($entity);
+        $entity = $this->ensureEntity($entity);
+        $entity->preRemove();
         
-        // cancel removing if
-        if ($entity->preRemove() === false) {
-            throw new Model_Exception('The entity "' . get_class($entity) . '" was unable to be updated because it is not valid.');
-        }
+        $this->repository->remove($entity);
+        $this->removeCache($entity->id, $entity);
         
-        // remove
-        $this->_driver->remove($entity);
-        
-        // post-remove event
         $entity->postRemove();
-        
-        // return the entity
+        unset($entity->id);
         return $entity;
     }
     
     /**
-     * Returns a new instance of the entity for the current driver.
+     * Returns a new instance of the entity for the current repository.
      * 
      * @param mixed $values The entity or values to pass to the entity constructor.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
-    public function _ensureEntity($values = array())
+    private function ensureEntity($values = array())
     {
         // if the passed value is already a valid entity, just return it
-        if ($values instanceof $this->_entity) {
+        if ($values instanceof $this->entity) {
             return $values;
         }
         
-        // reflect the entity class
-        $entity = new ReflectionClass($this->_entity);
-        
-        // make sure after reflecting that it's a valid subclass
-        if (!$entity->isSubclassOf('Model_Entity')) {
-            throw new Model_Exception('The entity "' . $entity->getName() . '" must be a subclass of "Moden_Entity".');
+        // reflect and make sure after reflecting that it's a valid subclass
+        $entity = new \ReflectionClass($this->entity);
+        if (!$entity->isSubclassOf('\Model\Entity')) {
+            throw new Exception('The entity "' . $entity->getName() . '" must be a subclass of "\Model\Entity".');
         }
-        
-        // return a new instance of it and pass it the passed values
         return $entity->newInstance($values);
     }
     
     /**
-     * Calls any other methods that aren't public and automates caching.
+     * Generates a cache key and returns it.
      * 
-     * @param string $name The method name.
-     * @param array  $args The method arguments.
+     * @param mixed $id The id of the item generate the key for.
      * 
-     * @return mixed
+     * @return string
      */
-    private function _call($name, $args)
+    private function generateCacheKey($id)
     {
-        // generate a cache key for storing and retrieving id sets
-        $key = md5(get_class($this->_driver) . $name . serialize($args));
-        
-        // attempt to retrieve the cached ids and load them
-        if ($value = $this->_fromCache($key)) {
-            return $value;
-        }
-        
-        // otherwise, get the result from the method
-        $value = call_user_func_array(array($this->_driver, $name), $args);
-        
-        // enforce return value type
-        $reflector = new Model_MethodReflector($this->_driver, $name);
-        if (!$reflector->isValidReturnValue($value)) {
-            throw new Model_Exception(
-                'The specified value was not a valid return type. Value: '
-                . gettype($value)
-                . '. Type(s): '
-                . implode(', ', $reflector->getReturnTypes())
-                . '.'
-            );
-        }
-        
-        // attempt to cache the value using the key
-        $this->_toCache($key, $value);
-        
-        // pass on the result
-        return $value;
+        return md5($this->entity . $id);
     }
     
     /**
-     * Adds an item to the cache.
+     * Adds an item to the cache if a cache repository is set.
      * 
-     * @param string $key The cache key.
+     * @param mixed $id   The id of the item to generate a key with.
+     * @param mixed $item The item to cache.
      * 
-     * @return mixed
+     * @return \Model\Dispatcher
      */
-    private function _fromCache($key)
+    private function toCache($id, $item)
     {
-        if ($this->_cache) {
-            return $this->_cache->get($key);
+        if ($this->cache) {
+            $this->cache->set($this->generateCacheKey($id), $item);
         }
-        return null;
+        return $this;
     }
     
     /**
-     * Puts an item in the cache.
+     * Pulls an item from the cache if a cache repository is set.
      * 
-     * @param string $key   The cache key.
-     * @param mixed  $value The value.
+     * @param mixed $id   The id of the item to generate a key with.
+     * @param mixed $item The item to cache.
      * 
-     * @return Model_Driver
+     * @return \Model\Dispatcher
      */
-    private function _toCache($key, $value)
+    private function fromCache($id)
     {
-        if ($this->_cache) {
-            $this->_cache->set($key, $value);
+        if ($this->cache) {
+            return $this->cache->get($this->generateCacheKey($id));
+        }
+        return false;
+    }
+    
+    /**
+     * Checks to see if an item exists in the cache if a cache repository is set.
+     * 
+     * @param mixed $id   The id of the item to generate a key with.
+     * @param mixed $item The item to cache.
+     * 
+     * @return \Model\Dispatcher
+     */
+    private function hasCache($id)
+    {
+        if ($this->cache) {
+            return $this->cache->exists($id);
+        }
+        return false;
+    }
+    
+    /**
+     * Removes an item from the cache if a cache repository is set.
+     * 
+     * @param mixed $id   The id of the item to generate a key with.
+     * @param mixed $item The item to cache.
+     * 
+     * @return \Model\Dispatcher
+     */
+    private function removeCache($id)
+    {
+        if ($this->cache) {
+            $this->cache->remove($this->generateCacheKey($id));
         }
         return $this;
     }

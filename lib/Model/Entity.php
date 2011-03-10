@@ -1,14 +1,16 @@
 <?php
 
+namespace Model;
+
 /**
  * The main entity class. All model entities should derive from this class.
  * 
  * @category Entities
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-abstract class Model_Entity implements Model_Accessible
+abstract class Entity implements Accessible
 {
     /**
      * Aliases for fields.
@@ -29,7 +31,7 @@ abstract class Model_Entity implements Model_Accessible
      * 
      * @param mixed $vals The values to set.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function __construct($values = array())
     {
@@ -85,7 +87,7 @@ abstract class Model_Entity implements Model_Accessible
      * 
      * @param string $name The value to unset.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function __unset($name)
     {
@@ -100,11 +102,11 @@ abstract class Model_Entity implements Model_Accessible
      * Sets a property type.
      * 
      * @param string                         $name     The property name.
-     * @param Model_Entity_PropertyInterface $property The property value.
+     * @param \Model\Entity_PropertyInterface $property The property value.
      * 
      * @return void
      */
-    public function set($name, Model_Entity_PropertyInterface $property)
+    public function set($name, Entity\PropertyInterface $property)
     {
         $name = $this->unalias($name);
         
@@ -126,7 +128,7 @@ abstract class Model_Entity implements Model_Accessible
 
         // if it isn't set yet, set it
         if (!isset($this->data[$name])) {
-            $this->data[$name] = new Model_Entity_Property_Default($this);
+            $this->data[$name] = new Entity\Property\Base($this);
         }
         
         // and we just return the property object
@@ -134,13 +136,13 @@ abstract class Model_Entity implements Model_Accessible
     }
 
     /**
-     * Tells the current entity to behave like the speicfied behavior.
+     * Tells the current entity to behave like the specified behavior.
      * 
-     * @param Model_Entity_BehaviorInterface $behavior The behavior to behave like.
+     * @param \Model\Entity\BehaviorInterface $behavior The behavior to behave like.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
-    public function actAs(Model_Entity_BehaviorInterface $behavior)
+    public function actAs(Entity\BehaviorInterface $behavior)
     {
         $behavior->init($this);
         return $this;
@@ -153,7 +155,7 @@ abstract class Model_Entity implements Model_Accessible
      */
     public function exists()
     {
-        return $this->__get('_id');
+        return $this->__isset('_id');
     }
     
     /**
@@ -161,7 +163,7 @@ abstract class Model_Entity implements Model_Accessible
      * 
      * @param mixed $array The array to import.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function import($array)
     {
@@ -177,8 +179,6 @@ abstract class Model_Entity implements Model_Accessible
     
     /**
      * Converts the entity to an array.
-     * 
-     * @param Model_Filter_MapInterface $filter The filter to apply.
      * 
      * @return array
      */
@@ -197,7 +197,7 @@ abstract class Model_Entity implements Model_Accessible
      * @param string $field The field to alias.
      * @param string $alias The alias to use.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function alias($field, $alias)
     {
@@ -226,7 +226,7 @@ abstract class Model_Entity implements Model_Accessible
      * @param string $name  The property to set.
      * @param mixed  $value The value to set.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function offsetSet($name, $value)
     {
@@ -262,7 +262,7 @@ abstract class Model_Entity implements Model_Accessible
      * 
      * @param string $name The property to unset.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function offsetUnset($name)
     {
@@ -292,7 +292,7 @@ abstract class Model_Entity implements Model_Accessible
     /**
      * Moves to the next item in the iteration.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function next()
     {
@@ -303,7 +303,7 @@ abstract class Model_Entity implements Model_Accessible
     /**
      * Resets the iteration.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function rewind()
     {
@@ -329,6 +329,28 @@ abstract class Model_Entity implements Model_Accessible
     public function count()
     {
         return count($this->data);
+    }
+    
+    /**
+     * Serializes the data and returns it.
+     * 
+     * @return string
+     */
+    public function serialize()
+    {
+        return serialize($this->export());
+    }
+    
+    /**
+     * Unserializes and sets the specified data.
+     * 
+     * @param string The serialized string to unserialize and set.
+     * 
+     * @return void
+     */
+    public function unserialize($data)
+    {
+        $this->import(unserialize($data));
     }
     
     /**

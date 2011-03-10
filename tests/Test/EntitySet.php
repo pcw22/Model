@@ -7,7 +7,7 @@ class Test_EntitySet extends Testes_UnitTest_Test
     public function testConstruction()
     {
         // instantiate with values
-        $this->set = new Model_EntitySet('Provider_Content', array(array('title' => 'element 1')));
+        $this->set = new \Model\EntitySet('Provider_Content', array(array('title' => 'element 1')));
         
         // make sure it has one
         $this->assert(count($this->set) === 1, 'The set should have 1 element');

@@ -82,7 +82,7 @@ class Test_Entity extends Testes_UnitTest_Test
         
         // assert events
         foreach ($events as $event) {
-            $this->assert($content1->$event, 'Model_Entity->' . $event . '() was not triggered.');
+            $this->assert($content1->$event, '\Model\Entity->' . $event . '() was not triggered.');
         }
     }
 }

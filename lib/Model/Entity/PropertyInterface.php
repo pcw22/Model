@@ -1,5 +1,7 @@
 <?php
 
+namespace Model\Entity;
+
 /**
  * Outlines what a behavior must implement.
  * 
@@ -8,7 +10,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-interface Model_Entity_PropertyInterface
+interface PropertyInterface
 {
     /**
      * Sets the specified value.

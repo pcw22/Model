@@ -1,5 +1,7 @@
 <?php
 
+namespace Model;
+
 /**
  * The model autoloader.
  * 
@@ -8,7 +10,7 @@
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
  */
-class Model_Autoloader
+class Autoloader
 {
     /**
      * The namespace of the autoloader.
@@ -18,13 +20,13 @@ class Model_Autoloader
     const NS = 'Model';
     
     /**
-     * Registeres autoloading.
+     * Registers autoloading.
      * 
      * @return void
      */
     public static function register()
     {
-        spl_autoload_register(array(self::NS . '_Autoloader', 'autoload'));
+        spl_autoload_register(array('\\' . self::NS . '\Autoloader', 'autoload'));
     }
     
     /**

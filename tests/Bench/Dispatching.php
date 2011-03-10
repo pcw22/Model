@@ -6,20 +6,20 @@ class Bench_Dispatching extends Testes_Benchmark_Test
     
     public function setUp()
     {
-        $this->dispatcher = new Model_Dispatcher(
+        $this->dispatcher = new \Model\Dispatcher(
             new Provider_Mock_Content,
             'Provider_Content'
         );
     }
     
-    public function methodCallingWithDocblock()
+    public function methodCallingWithDocblock1000Times()
     {
         for ($i = 0; $i < 1000; $i++) {
             $this->dispatcher->findById(1);
         }
     }
     
-    public function methodCallingWithNoDocblock()
+    public function methodCallingWithNoDocblock1000Times()
     {
         for ($i = 0; $i < 1000; $i++) {
             $this->dispatcher->findByIdNoType(1);

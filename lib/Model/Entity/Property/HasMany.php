@@ -1,14 +1,17 @@
 <?php
 
+namespace Model\Entity\Property;
+use Model;
+
 /**
  * A property that defines a one-to-many relationship with another entity.
  * 
  * @category Properties
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_Entity_Property_HasMany extends Model_Entity_Property_HasOne
+class HasMany extends HasOne
 {
     /**
      * Sets the has many relationship.
@@ -23,6 +26,6 @@ class Model_Entity_Property_HasMany extends Model_Entity_Property_HasOne
         $this->checkForClass();
 
         // then set the value in the set
-        $this->value = new Model_EntitySet($this->class, $value);
+        $this->value = new Model\EntitySet($this->class, $value);
     }
 }

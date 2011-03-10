@@ -1,14 +1,16 @@
 <?php
 
+namespace Model;
+
 /**
  * Provides information about return values and parameters for a method.
  * 
  * @category Reflection
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_MethodReflector
+class MethodReflector
 {
     /**
      * The reflection method instance.
@@ -25,7 +27,7 @@ class Model_MethodReflector
     protected $docblock;
     
     /**
-     * The return types avaialble for this method.
+     * The return types available for this method.
      * 
      * @var array
      */
@@ -37,11 +39,11 @@ class Model_MethodReflector
      * @param mixed $class  The class for the $method.
      * @param mixed $method The method belonging to $class.
      * 
-     * @return Model_Method_Reflector
+     * @return \Model\Method\Reflector
      */
     public function __construct($class, $method)
     {
-        $this->method = new ReflectionMethod($class, $method);
+        $this->method = new \ReflectionMethod($class, $method);
     }
     
     /**

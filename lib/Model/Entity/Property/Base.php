@@ -1,14 +1,17 @@
 <?php
 
+namespace Model\Entity\Property;
+use Model\Entity;
+
 /**
  * A property that passes through data.
  * 
  * @category Properties
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_Entity_Property_Default implements Model_Entity_PropertyInterface
+class Base implements Entity\PropertyInterface
 {
     /**
      * The property value.

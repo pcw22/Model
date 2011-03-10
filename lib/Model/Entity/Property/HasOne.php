@@ -1,14 +1,17 @@
 <?php
 
+namespace Model\Entity\Property;
+use Model;
+
 /**
  * A property that defines a one-to-one relationship with another entity.
  * 
  * @category Properties
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
+class HasOne extends Base
 {
     /**
      * The class name to use for the relationship.
@@ -45,11 +48,11 @@ class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
         $class = new $class($value);
         
         // make sure it's a valid instance
-        if (!$class instanceof Model_Entity) {
-            throw new Model_Exception(
+        if (!$class instanceof Model\Entity) {
+            throw new Model\Exception(
                 'The class "'
                 . get_class($class)
-                . '" must be a subclass of "Model_Entity".'
+                . '" must be a subclass of "\Model\Entity".'
             );
         }
 
@@ -60,7 +63,7 @@ class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
     /**
      * Returns the relationship value.
      * 
-     * @return Model_Entity
+     * @return \Model\Entity
      */
     public function get()
     {
@@ -93,7 +96,7 @@ class Model_Entity_Property_HasOne extends Model_Entity_Property_Default
     {
         // make sure a proper class was set
         if (!isset($this->class)) {
-            throw new Model_Exception(
+            throw new Model\Exception(
                 'Cannot instantiate has-one relationship for "'
                 . get_class($this->entity)
                 . '" because "class" was not defined in the "data" array.'

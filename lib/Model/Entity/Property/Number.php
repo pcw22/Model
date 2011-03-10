@@ -1,14 +1,16 @@
 <?php
 
+namespace Model\Entity\Property;
+
 /**
  * A property that acts as a number and can have a min/max value.
  * 
  * @category Properties
  * @package  Model
  * @author   Trey Shugart <treshugart@gmail.com>
- * @license  Copyright (c) 2010 Trey Shugart http://europaphp.org/license
+ * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Model_Entity_Property_Number extends Model_Entity_Property_Default
+class Number extends Base
 {
     /**
      * Overridden to provide a default number.
@@ -23,7 +25,7 @@ class Model_Entity_Property_Number extends Model_Entity_Property_Default
      * @param string|int $min The minimum value.
      * @param string|int $max The maximum value.
      * 
-     * @return Model_Entity_Property_Number
+     * @return \Model\Entity\Property\Number
      */
     public function __construct($min = null, $max = null)
     {

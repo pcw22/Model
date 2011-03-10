@@ -31,7 +31,7 @@ class Bench_EntityHydration extends Testes_Benchmark_Test
     
 	public function tearDown()
 	{
-		
+		$this->data = array();
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Bench_EntityHydration extends Testes_Benchmark_Test
 	 * 
 	 * @return void
 	 */
-	public function simpleUser1000Times()
+	public function simpleUserImport1000TimesWithSimpleData()
 	{
 		for ($i = 0; $i < 1000; $i++) {
 			$entity = new Provider_UserBasic;
@@ -60,7 +60,7 @@ class Bench_EntityHydration extends Testes_Benchmark_Test
 	 * 
 	 * @return void
 	 */
-	public function simpleUser1000TimesWithComplexData()
+	public function simpleUserImport1000TimesWithComplexData()
 	{
 		for ($i = 0; $i < 1000; $i++) {
 			$entity = new Provider_UserBasic;
@@ -76,7 +76,7 @@ class Bench_EntityHydration extends Testes_Benchmark_Test
 	 * 
 	 * @return void
 	 */
-	public function complexUser1000Times()
+	public function complexUserImport1000TimesWithSimpleData()
 	{
 		for ($i = 0; $i < 1000; $i++) {
 			$entity = new Provider_User;
@@ -93,7 +93,7 @@ class Bench_EntityHydration extends Testes_Benchmark_Test
 	 * 
 	 * @return void
 	 */
-	public function complexUser1000TimesWithComplexData()
+	public function complexUserImport1000TimesWithComplexData()
 	{
 		for ($i = 0; $i < 1000; $i++) {
 			$entity = new Provider_User;
@@ -101,44 +101,56 @@ class Bench_EntityHydration extends Testes_Benchmark_Test
 		}
 	}
 
-	public function simpleUserSetSimpleData()
+	public function simpleUserSetSimpleDataImport()
 	{
-		return new Model_EntitySet('Provider_UserBasic', $this->data['simpleset']);
+		$data = new \Model\EntitySet('Provider_UserBasic', $this->data['simpleset']);
+		unset($data);
 	}
 
-	public function simpleUserSetComplexData()
+	public function simpleUserSetComplexDataImport()
 	{
-		return new Model_EntitySet('Provider_UserBasic', $this->data['complexset']);
+		$data = new \Model\EntitySet('Provider_UserBasic', $this->data['complexset']);
+		unset($data);
 	}
 
-	public function complexUserSetSimpleData()
+	public function complexUserSetSimpleDataImport()
 	{
-		return new Model_EntitySet('Provider_User', $this->data['simpleset']);
+		$data = new \Model\EntitySet('Provider_User', $this->data['simpleset']);
+		unset($data);
 	}
 
-	public function complexUserSetComplexData()
+	public function complexUserSetComplexDataImport()
 	{
-		return new Model_EntitySet('Provider_User', $this->data['complexset']);
+		$data = new \Model\EntitySet('Provider_User', $this->data['complexset']);
+		unset($data);
 	}
 
 	public function simpleUserSetSimpleDataExport()
 	{
-		return $this->simpleUserSetSimpleData()->export();
+	    $data = new \Model\EntitySet('Provider_UserBasic', $this->data['simpleset']);
+	    $data->export();
+	    unset($data);
 	}
 
 	public function simpleUserSetComplexDataExport()
 	{
-		return $this->simpleUserSetComplexData()->export();
+	    $data = new \Model\EntitySet('Provider_UserBasic', $this->data['complexset']);
+	    $data->export();
+	    unset($data);
 	}
 
 	public function complexUserSetSimpleDataExport()
 	{
-		return $this->complexUserSetSimpleData()->export();
+	    $data = new \Model\EntitySet('Provider_User', $this->data['simpleset']);
+	    $data->export();
+	    unset($data);
 	}
 
 	public function complexUserSetComplexDataExport()
 	{
-		return $this->complexUserSetComplexData()->export();
+		$data = new \Model\EntitySet('Provider_User', $this->data['complexset']);
+		$data->export();
+		unset($data);
 	}
 
 	/**
@@ -152,10 +164,10 @@ class Bench_EntityHydration extends Testes_Benchmark_Test
 	protected function simpledata()
 	{
 		return array(
-			'id'       => md5(microtime()),
-			'name'     => 'Tres Hugart',
-			'dob'      => '1983-01-02 11:00:00',
-			'email'    => 'test@test.com'
+			'id'    => md5(microtime()),
+			'name'  => 'Tres Hugart',
+			'dob'   => '1983-01-02 11:00:00',
+			'email' => 'test@test.com'
 		);
 	}
 

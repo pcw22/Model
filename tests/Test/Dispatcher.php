@@ -9,7 +9,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      */
     public function testSaveMethodArgumentDefinition()
     {
-        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
+        $mock = new \Model\Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         // try saving of good instances
         try {
@@ -27,7 +27,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      */
     public function testInsertMethodArgumentDefinition()
     {
-        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
+        $mock = new \Model\Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         // try saving of good instances
         try {
@@ -45,7 +45,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      */
     public function testUpdateMethodArgumentDefinition()
     {
-        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
+        $mock = new \Model\Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         // try saving of good instances
         try {
@@ -63,7 +63,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      */
     public function testRemoveMethodArgumentDefinition()
     {
-        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
+        $mock = new \Model\Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         // try saving of good instances
         try {
@@ -81,11 +81,11 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      */
     public function testReturnValueDetection()
     {
-        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content');
+        $mock = new \Model\Dispatcher(new Provider_Mock_Content, 'Provider_Content');
         
         try {
             $mock->findById(1);
-        } catch (Model_Exception $e) {
+        } catch (\Model\Exception $e) {
             $this->assert(
                  false,
                 'The return value of "Provider_Content->findById()" was not detected with message: '
@@ -101,7 +101,7 @@ class Test_Dispatcher extends Testes_UnitTest_Test
      */
     public function testAutomatedCaching()
     {
-        $mock = new Model_Dispatcher(new Provider_Mock_Content, 'Provider_Content', new Model_Cache_Static);
+        $mock = new \Model\Dispatcher(new Provider_Mock_Content, 'Provider_Content', new \Model\Cache\Php);
         $mock->findById(1);
         $mock->findById(1);
         $mock->findById(2);

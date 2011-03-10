@@ -1,6 +1,8 @@
 <?php
 
-class Provider_UserBasic extends Model_Entity
+use Model\Entity;
+
+class Provider_UserBasic extends Entity
 {
 	
 }

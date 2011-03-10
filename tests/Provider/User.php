@@ -1,6 +1,8 @@
 <?php
 
-class Provider_User extends Model_Entity
+use Model\Entity;
+
+class Provider_User extends Entity
 {
     public function preConstruct()
     {

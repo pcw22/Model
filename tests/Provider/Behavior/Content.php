@@ -1,11 +1,13 @@
 <?php
 
-class Provider_Behavior_Content implements Model_Entity_BehaviorInterface
+use Model\Entity;
+
+class Provider_Behavior_Content implements Entity\BehaviorInterface
 {
-    public function init(Model_Entity $entity)
+    public function init(Entity $entity)
     {
-        $entity->set('user', new Model_Entity_Property_HasOne('Provider_User'));
-        $entity->set('created', new Model_Entity_Property_Date);
-        $entity->set('updated', new Model_Entity_Property_Date);
+        $entity->set('user', new Entity\Property\HasOne('Provider_User'));
+        $entity->set('created', new Entity\Property\Date);
+        $entity->set('updated', new Entity\Property\Date);
     }
 }

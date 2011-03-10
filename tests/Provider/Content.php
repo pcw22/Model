@@ -1,6 +1,8 @@
 <?php
 
-class Provider_Content extends Model_Entity
+use Model\Entity;
+
+class Provider_Content extends Entity
 {
     public $preConstruct = false;
     

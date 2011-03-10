@@ -1,10 +1,13 @@
 <?php
 
-class Provider_Friend extends Model_Entity
+use Model\Entity;
+use Model\Entity\Property;
+
+class Provider_Friend extends Entity
 {
     public function preConstruct()
     {
-    	$this->set('user', new Model_Entity_Property_HasOne('Provider_User'));
-    	$this->set('status', new Model_Entity_Property_Number(0, 10));
+    	$this->set('user', new Property\HasOne('Provider_User'));
+    	$this->set('status', new Property\Number(0, 10));
     }
 }

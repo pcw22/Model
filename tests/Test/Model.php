@@ -73,7 +73,7 @@ class Test_Model extends Testes_UnitTest_Test
     public function testDriverGetting()
     {
         $this->assert(
-            Model::get()->content->getDriver() instanceof Provider_Mock_Content,
+            Model::get()->content->getRepository() instanceof Provider_Mock_Content,
             'The content adapter is the incorrect instance.'
         );
     }
