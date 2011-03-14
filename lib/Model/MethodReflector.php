@@ -47,6 +47,16 @@ class MethodReflector
     }
     
     /**
+     * Returns the PHP Reflection Method object being used by the reflector.
+     * 
+     * @return \ReflectionMethod
+     */
+    public function getReflector()
+    {
+        return $this->method;
+    }
+    
+    /**
      * Returns the return value for the specified method as an array.
      * 
      * @return array
@@ -92,25 +102,28 @@ class MethodReflector
      */
     public function isValidReturnValue($value)
     {
-        // get the type of the value
+        $types     = $this->getReturnTypes();
         $valueType = strtolower(gettype($value));
-        if ($valueType === 'object') {
-            $valueType = get_class($value);
-        }
-        
-        $types = $this->getReturnTypes();
         
         // if there are no types, then it is valid
         if (!$types) {
             return true;
         }
         
-        // go through and check each type
-        // if it matches one, then it's fine
         foreach ($types as $type) {
             // "mixed" means everything
             if ($type === 'mixed') {
                 return true;
+            }
+            
+            // can be a generic object type
+            if ($valueType === 'object' && $type === 'object') {
+                return true;
+            }
+            
+            // object is an object instance, so we check that
+            if ($valueType === 'object') {
+                return $value instanceof $type;
             }
             
             // check actual type against specified type

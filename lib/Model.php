@@ -44,11 +44,9 @@ class Model
      * @var array
      */
     protected static $defaultConfig = array(
-        'repository.class' => '\:nameRepository',
+        'repository.class' => '\Repository\:name',
         'repository.args'  => array(),
-        'entity.class'     => '\:nameEntity',
-        'cache.class'      => null,
-        'cache.args'       => array()
+        'cache.instance'   => null
     );
     
     /**
@@ -105,8 +103,7 @@ class Model
         // configure the dispatcher
         $dispatcher = new \Model\Dispatcher(
             $this->getRepositoryInstance($name, $args),
-            $this->formatEntityClass($name),
-            $this->getCacheInstance($name)
+            $this->config['cache.instance']
         );
         
         // cache it
@@ -123,35 +120,9 @@ class Model
      * 
      * @return string
      */
-    protected function formatRepositoryClass($name)
+    private function formatRepositoryClass($name)
     {
         $class = str_replace(':name', ucfirst($name), $this->config['repository.class']);
-        return $class;
-    }
-    
-    /**
-     * Formats the entity classname and returns it.
-     * 
-     * @param string $name The repository name.
-     * 
-     * @return string
-     */
-    protected function formatEntityClass($name)
-    {
-        $class = str_replace(':name', ucfirst($name), $this->config['entity.class']);
-        return $class;
-    }
-    
-    /**
-     * Formats the cache classname and returns it.
-     * 
-     * @param string $name The repository name.
-     * 
-     * @return string
-     */
-    protected function formatCacheClass($name)
-    {
-        $class = str_replace(':name', ucfirst($name), $this->config['cache.class']);
         return $class;
     }
     
@@ -163,7 +134,7 @@ class Model
      * 
      * @return \Model\RepositoryInterface
      */
-    protected function getRepositoryInstance($name, array $args = array())
+    private function getRepositoryInstance($name, array $args = array())
     {
         $repository = $this->formatRepositoryClass($name);
         $repository = new \ReflectionClass($repository);
@@ -171,24 +142,6 @@ class Model
             return $repository->newInstanceArgs($args ? $args : $this->config['repository.args']);
         }
         return $repository->newInstance();
-    }
-    
-    /**
-     * Creates a cache instance from the configuration. If caching is disabled, then
-     * it returns null.
-     * 
-     * @return mixed
-     */
-    protected function getCacheInstance($name)
-    {
-        if ($cache = $this->formatCacheClass($name)) {
-            $cache = new \ReflectionClass($cache);
-            if ($cache->hasMethod('__construct')) {
-                return $cache->newInstanceArgs($this->config['cache.args']);
-            }
-            return $cache->newInstance();
-        }
-        return null;
     }
     
     /**

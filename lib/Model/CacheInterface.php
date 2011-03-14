@@ -24,12 +24,13 @@ interface CacheInterface
     /**
      * Caches an item.
      * 
-     * @param string $key   The cache key.
-     * @param mixed  $value The cached value.
+     * @param string $key      The cache key.
+     * @param mixed  $value    The cached value.
+     * @param mixed  $lifetime The max lifetime of the item in the cache.
      * 
      * @return \Model\CacheInterface
      */
-    public function set($key, $value);
+    public function set($key, $value, $lifetime = null);
     
     /**
      * Checks to see if the specified cache item exists.

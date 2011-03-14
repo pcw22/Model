@@ -1,7 +1,8 @@
 <?php
 
 namespace Model\Entity\Property;
-use Model;
+use Model\EntityAbstract;
+use Model\Exception;
 
 /**
  * A property that defines a one-to-one relationship with another entity.
@@ -48,11 +49,11 @@ class HasOne extends Base
         $class = new $class($value);
         
         // make sure it's a valid instance
-        if (!$class instanceof Model\Entity) {
-            throw new Model\Exception(
+        if (!$class instanceof EntityAbstract) {
+            throw new Exception(
                 'The class "'
                 . get_class($class)
-                . '" must be a subclass of "\Model\Entity".'
+                . '" must be a subclass of "\Model\EntityAbstract".'
             );
         }
 
@@ -63,7 +64,7 @@ class HasOne extends Base
     /**
      * Returns the relationship value.
      * 
-     * @return \Model\Entity
+     * @return \Model\EntityAbstract
      */
     public function get()
     {
@@ -96,7 +97,7 @@ class HasOne extends Base
     {
         // make sure a proper class was set
         if (!isset($this->class)) {
-            throw new Model\Exception(
+            throw new Exception(
                 'Cannot instantiate has-one relationship for "'
                 . get_class($this->entity)
                 . '" because "class" was not defined in the "data" array.'

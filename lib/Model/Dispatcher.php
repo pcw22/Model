@@ -20,13 +20,6 @@ class Dispatcher
     private $repository;
     
     /**
-     * The entity name to use.
-     * 
-     * @var string
-     */
-    private $entity;
-    
-    /**
      * The cache repository, if any, to use for caching.
      * 
      * @var \Model\Cache\RepositoryInterface
@@ -40,11 +33,10 @@ class Dispatcher
      * 
      * @return \Model\Dispatcher
      */
-    public function __construct(RepositoryInterface $repository, $entity, CacheInterface $cache = null)
+    public function __construct(RepositoryInterface $repository, CacheInterface $cache = null)
     {
         $this->repository = $repository;
-        $this->entity = $entity;
-        $this->cache  = $cache;
+        $this->cache      = $cache;
     }
     
     /**
@@ -204,15 +196,17 @@ class Dispatcher
      */
     private function ensureEntity($values = array())
     {
+        $entity = $this->repository->getEntityClassName();
+        
         // if the passed value is already a valid entity, just return it
-        if ($values instanceof $this->entity) {
+        if ($values instanceof $entity) {
             return $values;
         }
         
         // reflect and make sure after reflecting that it's a valid subclass
-        $entity = new \ReflectionClass($this->entity);
-        if (!$entity->isSubclassOf('\Model\Entity')) {
-            throw new Exception('The entity "' . $entity->getName() . '" must be a subclass of "\Model\Entity".');
+        $entity = new \ReflectionClass($entity);
+        if (!$entity->isSubclassOf('\Model\EntityAbstract')) {
+            throw new Exception('The entity "' . $entity->getName() . '" must be a subclass of "\Model\EntityAbstract".');
         }
         return $entity->newInstance($values);
     }
@@ -226,7 +220,7 @@ class Dispatcher
      */
     private function generateCacheKey($id)
     {
-        return md5($this->entity . $id);
+        return md5($this->repository->getEntityClassName() . $id);
     }
     
     /**

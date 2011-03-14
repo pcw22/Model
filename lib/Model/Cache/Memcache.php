@@ -24,7 +24,8 @@ class Memcache implements Model\CacheInterface
                 'host' => 'localhost',
                 'port' => 11211
             )
-        )
+        ),
+        'lifetime' => 0
     );
     
     /**
@@ -43,8 +44,7 @@ class Memcache implements Model\CacheInterface
      */
     public function __construct(array $config = array())
     {
-        parent::__construct($config);
-        $this->memcache = new Memcache;
+        $this->memcache = new \Memcache;
         foreach ($this->config['servers'] as $server) {
             $this->memcache->addServer($server['host'], $server['port']);
         }
@@ -53,14 +53,16 @@ class Memcache implements Model\CacheInterface
     /**
      * Sets an item in the cache.
      * 
-     * @param string $key   The cache key.
-     * @param mixed  $value The cache value.
+     * @param string $key      The cache key.
+     * @param mixed  $value    The cached value.
+     * @param mixed  $lifetime The max lifetime of the item in the cache.
      * 
      * @return void
      */
-    public function set($key, $value)
+    public function set($key, $value, $lifetime = null)
     {
-        $this->memcache->add($key, $value);
+        $lifetime = is_null($lifetime) ? $this->config['lifetime'] : $lifetime;
+        $this->memcache->add($key, $value, $lifetime);
     }
     
     /**

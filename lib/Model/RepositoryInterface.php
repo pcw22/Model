@@ -13,7 +13,7 @@ namespace Model;
 interface RepositoryInterface
 {
     /**
-     * Returns an object by it's id.
+     * Returns an object by its id.
      * 
      * @param mixed $id The id to find the item by.
      * 
@@ -22,11 +22,7 @@ interface RepositoryInterface
     public function findById($id);
     
     /**
-     * We must provide repository specific CRUD operations.
-     * 
-     * If this method is protected, events and the return value are automated.
-     * If it is made public, then you are on your own to implement event
-     * triggering, cancelation and return value.
+     * Inserts the specified entity and returns its id.
      * 
      * @param \Model\Entity $entity The entity to insert.
      * 
@@ -35,11 +31,7 @@ interface RepositoryInterface
     public function insert($entity);
     
     /**
-     * We must provide repository specific CRUD operations.
-     * 
-     * If this method is protected, events and the return value are automated.
-     * If it is made public, then you are on your own to implement event
-     * triggering, cancelation and return value.
+     * Updates the specified.
      * 
      * @param \Model\Entity $entity The entity to insert.
      * 
@@ -48,15 +40,18 @@ interface RepositoryInterface
     public function update($entity);
     
     /**
-     * We must provide repository specific CRUD operations.
-     * 
-     * If this method is protected, events and the return value are automated.
-     * If it is made public, then you are on your own to implement event
-     * triggering, cancelation and return value.
+     * Removes the specified entity.
      * 
      * @param \Model\Entity $entity The entity to insert.
      * 
      * @return \Model\Repository
      */
     public function remove($entity);
+    
+    /**
+     * Returns the name of the entity class.
+     * 
+     * @return string
+     */
+    public function getEntityClassName();
 }

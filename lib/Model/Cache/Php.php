@@ -23,12 +23,13 @@ class Php implements Model\CacheInterface
     /**
      * Sets a cache item.
      * 
-     * @param string $key   The cache key.
-     * @param mixed  $value The cache value.
+     * @param string $key      The cache key.
+     * @param mixed  $value    The cached value.
+     * @param mixed  $lifetime The max lifetime of the item in the cache. Not supported in this driver.
      * 
      * @return void
      */
-    public function set($key, $value)
+    public function set($key, $value, $lifetime = null)
     {
         $this->cache[$key] = $value;
     }

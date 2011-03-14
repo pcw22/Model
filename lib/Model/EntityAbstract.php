@@ -10,7 +10,7 @@ namespace Model;
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-abstract class Entity implements Accessible
+abstract class EntityAbstract implements Accessible
 {
     /**
      * Aliases for fields.
