@@ -205,8 +205,8 @@ class Dispatcher
         
         // reflect and make sure after reflecting that it's a valid subclass
         $entity = new \ReflectionClass($entity);
-        if (!$entity->isSubclassOf('\Model\EntityAbstract')) {
-            throw new Exception('The entity "' . $entity->getName() . '" must be a subclass of "\Model\EntityAbstract".');
+        if (!$entity->isSubclassOf('\Model\Entity')) {
+            throw new Exception('The entity "' . $entity->getName() . '" must be a subclass of "\Model\Entity".');
         }
         return $entity->newInstance($values);
     }

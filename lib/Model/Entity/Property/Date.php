@@ -10,7 +10,7 @@ namespace Model\Entity\Property;
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Date extends Base
+class Date extends PassThru
 {
     /**
      * The date format.

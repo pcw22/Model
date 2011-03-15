@@ -1,6 +1,9 @@
 <?php
 
 namespace Model;
+use Model\Entity\BehaviorInterface;
+use Model\Entity\Property\PassThru;
+use Model\Entity\PropertyInterface;
 
 /**
  * The main entity class. All model entities should derive from this class.
@@ -10,21 +13,28 @@ namespace Model;
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-abstract class EntityAbstract implements Accessible
+class Entity implements Accessible
 {
-    /**
-     * Aliases for fields.
-     * 
-     * @var array
-     */
-    protected $aliases = array();
-    
     /**
      * The data in the entity.
      * 
      * @var array
      */
-    protected $data = array();
+    private $data = array();
+    
+    /**
+     * The whitelisted properties.
+     * 
+     * @var array
+     */
+    private $whitelist = array();
+    
+    /**
+     * The blacklisted properties.
+     * 
+     * @var array
+     */
+    private $blacklist = array();
     
     /**
      * Constructs a new entity and sets any passed values.
@@ -35,13 +45,8 @@ abstract class EntityAbstract implements Accessible
      */
     public function __construct($values = array())
     {
-        // pre-construction
         $this->preConstruct();
-        
-        // automate values
         $this->import($values);
-        
-        // post-construction
         $this->postConstruct();
     }
     
@@ -55,7 +60,9 @@ abstract class EntityAbstract implements Accessible
      */
     public function __set($name, $value)
     {
-        $this->get($name)->set($value);
+        if ($property = $this->get($name)) {
+            $property->set($value);
+        }
         return $this;
     }
     
@@ -68,7 +75,10 @@ abstract class EntityAbstract implements Accessible
      */
     public function __get($name)
     {
-        return $this->get($name)->get();
+        if ($property = $this->get($name)) {
+            return $property->get();
+        }
+        return null;
     }
     
     /**
@@ -78,7 +88,6 @@ abstract class EntityAbstract implements Accessible
      */
     public function __isset($name)
     {
-        $name = $this->unalias($name);
         return isset($this->data[$name]);
     }
     
@@ -91,7 +100,6 @@ abstract class EntityAbstract implements Accessible
      */
     public function __unset($name)
     {
-        $name = $this->unalias($name);
         if ($this->__isset($name)) {
             unset($this->data[$name]);
         }
@@ -99,20 +107,49 @@ abstract class EntityAbstract implements Accessible
     }
     
     /**
+     * Whitelists a property or properties.
+     * 
+     * @param mixed $properties A property or array of properties to whitelist.
+     * 
+     * @return \Model\Entity
+     */
+    public function whitelist($properties)
+    {
+        foreach ((array) $properties as $property) {
+            $this->whitelist[$property] = $property;
+        }
+        return $this;
+    }
+    
+    /**
+     * Blacklists a property or properties.
+     * 
+     * @param mixed $properties A property or array of properties to blacklist.
+     * 
+     * @return \Model\Entity
+     */
+    public function blacklist($properties)
+    {
+        foreach ((array) $properties as $property) {
+            $this->blacklist[$property] = $property;
+        }
+        return $this;
+    }
+    
+    /**
      * Sets a property type.
      * 
-     * @param string                         $name     The property name.
-     * @param \Model\Entity_PropertyInterface $property The property value.
+     * @param string                          $name     The property name.
+     * @param \Model\Entity\PropertyInterface $property The property value.
      * 
-     * @return void
+     * @return \Model\Entity
      */
-    public function set($name, Entity\PropertyInterface $property)
+    public function set($name, PropertyInterface $property)
     {
-        $name = $this->unalias($name);
-        
-        // set the property object and return it
-        $this->data[$name] = $property;
-        return $this->data[$name];
+        if ($this->canAccessProperty($name)) {
+            $this->data[$name] = $property;
+        }
+        return $this;
     }
     
     /**
@@ -124,14 +161,16 @@ abstract class EntityAbstract implements Accessible
      */
     public function get($name)
     {
-        $name = $this->unalias($name);
-
-        // if it isn't set yet, set it
-        if (!isset($this->data[$name])) {
-            $this->data[$name] = new Entity\Property\Base($this);
+        if (isset($this->data[$name])) {
+            return $this->data[$name];
         }
         
-        // and we just return the property object
+        if ($this->canAccessProperty($name)) {
+            $this->data[$name] = new PassThru($this);
+        } else {
+            throw new Exception('Property "' . get_class($this) . '->' . $name . '" is restricted from being accessed.');
+        }
+        
         return $this->data[$name];
     }
 
@@ -142,7 +181,7 @@ abstract class EntityAbstract implements Accessible
      * 
      * @return \Model\Entity
      */
-    public function actAs(Entity\BehaviorInterface $behavior)
+    public function actAs(BehaviorInterface $behavior)
     {
         $behavior->init($this);
         return $this;
@@ -155,7 +194,7 @@ abstract class EntityAbstract implements Accessible
      */
     public function exists()
     {
-        return $this->__isset('_id');
+        return $this->__isset('id');
     }
     
     /**
@@ -451,5 +490,25 @@ abstract class EntityAbstract implements Accessible
     public function postRemove()
     {
         
+    }
+    
+    /**
+     * Checks to see if the property can be set according to whitelist/blacklist restrictions.
+     * 
+     * @param string $name The property to check.
+     * 
+     * @return bool
+     */
+    private function canAccessProperty($name)
+    {
+        if ($this->whitelist && !isset($this->whitelist[$name])) {
+            return false;
+        }
+        
+        if (isset($this->blacklist[$name])) {
+            return false;
+        }
+        
+        return true;
     }
 }

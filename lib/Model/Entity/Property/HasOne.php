@@ -1,7 +1,7 @@
 <?php
 
 namespace Model\Entity\Property;
-use Model\EntityAbstract;
+use Model\Entity;
 use Model\Exception;
 
 /**
@@ -12,7 +12,7 @@ use Model\Exception;
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class HasOne extends Base
+class HasOne extends PassThru
 {
     /**
      * The class name to use for the relationship.
@@ -49,11 +49,11 @@ class HasOne extends Base
         $class = new $class($value);
         
         // make sure it's a valid instance
-        if (!$class instanceof EntityAbstract) {
+        if (!$class instanceof Entity) {
             throw new Exception(
                 'The class "'
                 . get_class($class)
-                . '" must be a subclass of "\Model\EntityAbstract".'
+                . '" must be a subclass of "\Model\Entity".'
             );
         }
 
@@ -64,7 +64,7 @@ class HasOne extends Base
     /**
      * Returns the relationship value.
      * 
-     * @return \Model\EntityAbstract
+     * @return \Model\Entity
      */
     public function get()
     {

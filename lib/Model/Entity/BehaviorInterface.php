@@ -1,7 +1,7 @@
 <?php
 
 namespace Model\Entity;
-use Model\EntityAbstract;
+use Model\Entity;
 
 /**
  * Outlines what a behavior must implement.
@@ -16,9 +16,9 @@ interface BehaviorInterface
     /**
      * Initializes the passed entity to behave a certain way.
      * 
-     * @param \Model\EntityAbstract $entity The entity to initialize.
+     * @param \Model\Entity $entity The entity to initialize.
      * 
      * @return void
      */
-	public function init(EntityAbstract $entity);
+	public function init(Entity $entity);
 }

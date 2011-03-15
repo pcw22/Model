@@ -94,7 +94,7 @@ class EntitySet implements Accessible
     public function walk($callback, array &$userdata = array())
     {
         if (!is_callable($callback)) {
-            throw new Exception('The callback specified to \Model\EntityAbstract->walk() is not callable.');
+            throw new Exception('The callback specified to \Model\Entity->walk() is not callable.');
         }
         
         // just call it without returning

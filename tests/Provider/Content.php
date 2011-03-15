@@ -27,7 +27,6 @@ class Provider_Content extends Entity
     public function preConstruct()
     {
         $this->preConstruct = true;
-        $this->actAs(new Provider_Behavior_Default);
         $this->actAs(new Provider_Behavior_Content);
     }
     

@@ -23,7 +23,7 @@ class Provider_Mock_Content implements Provider_ContentInterface
     
     public function insert($entity)
     {
-        $entity->id = md5(microtime());
+        return md5(microtime());
     }
     
     public function update($entity)
@@ -33,6 +33,11 @@ class Provider_Mock_Content implements Provider_ContentInterface
     
     public function remove($entity)
     {
-        unset($entity->id);
+        
+    }
+    
+    public function getEntityClassName()
+    {
+        return 'Provider_Content';
     }
 }

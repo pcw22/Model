@@ -2,6 +2,7 @@
 
 namespace Model\Entity\Property;
 use Model\Entity;
+use Model\Entity\PropertyInterface;
 
 /**
  * A property that passes through data.
@@ -11,7 +12,7 @@ use Model\Entity;
  * @author   Trey Shugart <treshugart@gmail.com>
  * @license  Copyright (c) 2011 Trey Shugart http://europaphp.org/license
  */
-class Base implements Entity\PropertyInterface
+class PassThru implements PropertyInterface
 {
     /**
      * The property value.
