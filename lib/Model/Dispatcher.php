@@ -3,7 +3,7 @@
 namespace Model;
 
 /**
- * The main repository class. All model repositorys should extend this class.
+ * The main repository class. All model repositories should extend this class.
  * 
  * @category Repositorys
  * @package  Model
