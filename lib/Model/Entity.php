@@ -37,6 +37,17 @@ class Entity implements Accessible
     private $blacklist = array();
     
     /**
+     * The name of the id property.
+     * 
+     * @var string
+     */
+    private $idPropertyName = 'id';
+    
+    private $hasOne = array();
+    
+    private $hasMany = array();
+    
+    /**
      * Constructs a new entity and sets any passed values.
      * 
      * @param mixed $vals The values to set.
@@ -60,8 +71,15 @@ class Entity implements Accessible
      */
     public function __set($name, $value)
     {
-        if ($property = $this->get($name)) {
-            $property->set($value);
+        if ($this->canAccessProperty($name)) {
+            if (isset($this->hasOne[$name]) && !$value instanceof Entity) {
+                $class = $this->hasOne[$name];
+                $this->data[$name] = new $class($value);
+            } elseif (isset($this->hasMany[$name]) && !$value instanceof EntitySet) {
+                $this->data[$name] = new EntitySet($this->hasMany[$name], $value);
+            } else {
+                $this->data[$name] = $value;
+            }
         }
         return $this;
     }
@@ -75,9 +93,23 @@ class Entity implements Accessible
      */
     public function __get($name)
     {
-        if ($property = $this->get($name)) {
-            return $property->get();
+        if (!$this->canAccessProperty($name)) {
+            return null;
         }
+        
+        if (isset($this->data[$name])) {
+            return $this->data[$name];
+        }
+        
+        if (isset($this->hasOne[$name])) {
+            $class = $this->hasOne[$name];
+            $this->data[$name] = new $class;
+            return $this->data[$name];
+        } elseif (isset($this->hasMany[$name])) {
+            $this->data[$name] = new EntitySet($this->hasMeny[$name]);
+            return $this->data[$name];
+        }
+        
         return null;
     }
     
@@ -100,9 +132,91 @@ class Entity implements Accessible
      */
     public function __unset($name)
     {
-        if ($this->__isset($name)) {
+        if (isset($this->data[$name])) {
             unset($this->data[$name]);
         }
+        return $this;
+    }
+    
+    /**
+     * Adds a has-one relationship to the entity.
+     * 
+     * @param string $name  The name of the property.
+     * @param string $class The class to use.
+     * 
+     * @return \Model\Entity
+     */
+    public function hasOne($name, $class)
+    {
+        $this->hasOne[$name] = $class;
+        return $this;
+    }
+    
+    /**
+     * Adds a has-many relationship to the entity.
+     * 
+     * @param string $name  The name of the property.
+     * @param string $class The class to pass to the EntitySet.
+     */
+    public function hasMany($name, $class)
+    {
+        $this->hasMany[$name] = $class;
+        return $this;
+    }
+    
+    /**
+     * Sets the id.
+     * 
+     * @param mixed $id The id to set.
+     * 
+     * @return \Model\Entity
+     */
+    public function setId($id)
+    {
+        $this->__set($this->idPropertyName, $id);
+        return $this;
+    }
+    
+    /**
+     * Returns the id.
+     * 
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->__get($this->idPropertyName);
+    }
+    
+    /**
+     * Returns whether the id is set.
+     * 
+     * @return bool
+     */
+    public function hasId()
+    {
+        return $this->__isset($this->idPropertyName);
+    }
+    
+    /**
+     * Removes the id.
+     * 
+     * @return \Model\Entity
+     */
+    public function removeId()
+    {
+        return $this->__unset($this->idPropertyName);
+    }
+    
+    /**
+     * Sets the name of the id property.
+     * 
+     * @param string $name The name of the property.
+     * 
+     * @return \Model\Entity
+     */
+    public function setIdPropertyName($name)
+    {
+        $this->idPropertyName = $name;
         return $this;
     }
     
@@ -116,6 +230,9 @@ class Entity implements Accessible
     public function whitelist($properties)
     {
         foreach ((array) $properties as $property) {
+            if ($property === $this->idPropertyName) {
+                throw new Exception('Cannot set id property accessibility.');
+            }
             $this->whitelist[$property] = $property;
         }
         return $this;
@@ -131,70 +248,12 @@ class Entity implements Accessible
     public function blacklist($properties)
     {
         foreach ((array) $properties as $property) {
+            if ($property === $this->idPropertyName) {
+                throw new Exception('Cannot set id property accessibility.');
+            }
             $this->blacklist[$property] = $property;
         }
         return $this;
-    }
-    
-    /**
-     * Sets a property type.
-     * 
-     * @param string                          $name     The property name.
-     * @param \Model\Entity\PropertyInterface $property The property value.
-     * 
-     * @return \Model\Entity
-     */
-    public function set($name, PropertyInterface $property)
-    {
-        if ($this->canAccessProperty($name)) {
-            $this->data[$name] = $property;
-        }
-        return $this;
-    }
-    
-    /**
-     * For easy property getting.
-     * 
-     * @param string $name The property name.
-     * 
-     * @return mixed
-     */
-    public function get($name)
-    {
-        if (isset($this->data[$name])) {
-            return $this->data[$name];
-        }
-        
-        if ($this->canAccessProperty($name)) {
-            $this->data[$name] = new PassThru($this);
-        } else {
-            throw new Exception('Property "' . get_class($this) . '->' . $name . '" is restricted from being accessed.');
-        }
-        
-        return $this->data[$name];
-    }
-
-    /**
-     * Tells the current entity to behave like the specified behavior.
-     * 
-     * @param \Model\Entity\BehaviorInterface $behavior The behavior to behave like.
-     * 
-     * @return \Model\Entity
-     */
-    public function actAs(BehaviorInterface $behavior)
-    {
-        $behavior->init($this);
-        return $this;
-    }
-    
-    /**
-     * Checks to see if the item exists.
-     * 
-     * @return bool
-     */
-    public function exists()
-    {
-        return $this->__isset('id');
     }
     
     /**
@@ -208,10 +267,10 @@ class Entity implements Accessible
     {
         if (is_array($array) || is_object($array)) {
             foreach ($array as $k => $v) {
-                $this->get($k)->import($v);
+                $this->__set($k, $v);
             }
         } else {
-            $this->get('_id')->import($array);
+            $this->__set($this->idPropertyName, $array);
         }
         return $this;
     }
@@ -225,38 +284,12 @@ class Entity implements Accessible
     {
         $array = array();
         foreach ($this->data as $k => $v) {
-            $array[$k] = $v->export();
+            if ($v instanceof Accessible) {
+                $v = $v->export();
+            }
+            $array[$k] = $v;
         }
         return $array;
-    }
-    
-    /**
-     * Aliases the field with the specified alias.
-     * 
-     * @param string $field The field to alias.
-     * @param string $alias The alias to use.
-     * 
-     * @return \Model\Entity
-     */
-    public function alias($field, $alias)
-    {
-        $this->aliases[$alias] = $field;
-        return $this;
-    }
-    
-    /**
-     * Returns the real name of the specified alias.
-     * 
-     * @param string $alias The alias to get the real name for.
-     * 
-     * @return string
-     */
-    public function unalias($alias)
-    {
-        if (isset($this->aliases[$alias])) {
-            return $this->aliases[$alias];
-        }
-        return $alias;
     }
     
     /**

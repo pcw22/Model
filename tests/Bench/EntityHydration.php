@@ -1,238 +1,74 @@
 <?php
 
+use Model\EntitySet;
+use Provider\ContentEntity;
+
 class Bench_EntityHydration extends Testes_Benchmark_Test
 {
-    /**
-     * The hydration data that is set up during setUp().
-     * 
-     * @var array
-     */
-	protected $data = array(
-		'simple'     => array(),
-		'complex'    => array(),
-		'simpleset'  => array(),
-		'complexset' => array()
-	);
+    private $set;
     
-    /**
-     * Sets up hydration data for different benchmarks.
-     * 
-     * @return void
-     */
-	public function setUp()
-	{
-		$this->data['simple']     = $this->simpledata();
-		$this->data['complex']    = $this->complexdata();
-		for ($i = 0; $i < 1000; $i++) {
-			$this->data['simpleset'][]  = $this->data['simple'];
-			$this->data['complexset'][] = $this->data['complex'];
-		}
-	}
+    public function setUp()
+    {
+        $this->set = new EntitySet('\Provider\ContentEntity');
+    }
     
-	public function tearDown()
-	{
-		$this->data = array();
-	}
-
-	/**
-	 * Benchmarks a simple user getting hydrated with basic information.
-	 * 
-	 * No custom properties are assigned to this user and no behaviors
-	 * were invoked.
-	 * 
-	 * @return void
-	 */
-	public function simpleUserImport1000TimesWithSimpleData()
-	{
-		for ($i = 0; $i < 1000; $i++) {
-			$entity = new Provider_UserBasic;
-			$entity->import($this->data['simple']);
-		}
-	}
-
-	/**
-	 * Benchmarks a simple user getting hydrated with basic information.
-	 * 
-	 * No custom properties were assigned to this user and no behaviors
-	 * were invoked. This is the same user as "benchmarkSimpleUser1000Times"
-	 * but using the same data that was used for the complex user with
-	 * complex data.
-	 * 
-	 * @return void
-	 */
-	public function simpleUserImport1000TimesWithComplexData()
-	{
-		for ($i = 0; $i < 1000; $i++) {
-			$entity = new Provider_UserBasic;
-			$entity->import($this->data['complex']);
-		}
-	}
-
-	/**
-	 * Benchmarks a simple user getting hydrated with basic information.
-	 * 
-	 * Custom properties and behaviors are being used, but the same data
-	 * that was used for the simple user and simple data was used.
-	 * 
-	 * @return void
-	 */
-	public function complexUserImport1000TimesWithSimpleData()
-	{
-		for ($i = 0; $i < 1000; $i++) {
-			$entity = new Provider_User;
-			$entity->import($this->data['simple']);
-		}
-	}
-
-	/**
-	 * Benchmarks a simple user getting hydrated with basic information.
-	 * 
-	 * Custom properties and behaviors are being used. The same data used
-	 * for the simple user, complex data benchmark was used making this
-	 * the most complicated benchmark.
-	 * 
-	 * @return void
-	 */
-	public function complexUserImport1000TimesWithComplexData()
-	{
-		for ($i = 0; $i < 1000; $i++) {
-			$entity = new Provider_User;
-			$entity->import($this->data['complex']);
-		}
-	}
-
-	public function simpleUserSetSimpleDataImport()
-	{
-		$data = new \Model\EntitySet('Provider_UserBasic', $this->data['simpleset']);
-		unset($data);
-	}
-
-	public function simpleUserSetComplexDataImport()
-	{
-		$data = new \Model\EntitySet('Provider_UserBasic', $this->data['complexset']);
-		unset($data);
-	}
-
-	public function complexUserSetSimpleDataImport()
-	{
-		$data = new \Model\EntitySet('Provider_User', $this->data['simpleset']);
-		unset($data);
-	}
-
-	public function complexUserSetComplexDataImport()
-	{
-		$data = new \Model\EntitySet('Provider_User', $this->data['complexset']);
-		unset($data);
-	}
-
-	public function simpleUserSetSimpleDataExport()
-	{
-	    $data = new \Model\EntitySet('Provider_UserBasic', $this->data['simpleset']);
-	    $data->export();
-	    unset($data);
-	}
-
-	public function simpleUserSetComplexDataExport()
-	{
-	    $data = new \Model\EntitySet('Provider_UserBasic', $this->data['complexset']);
-	    $data->export();
-	    unset($data);
-	}
-
-	public function complexUserSetSimpleDataExport()
-	{
-	    $data = new \Model\EntitySet('Provider_User', $this->data['simpleset']);
-	    $data->export();
-	    unset($data);
-	}
-
-	public function complexUserSetComplexDataExport()
-	{
-		$data = new \Model\EntitySet('Provider_User', $this->data['complexset']);
-		$data->export();
-		unset($data);
-	}
-
-	/**
-	 * Returns a simple data array for hydration.
-	 * 
-	 * This array doesn't contain any relationships or complex data 
-	 * structures.
-	 * 
-	 * @return array
-	 */
-	protected function simpledata()
-	{
-		return array(
-			'id'    => md5(microtime()),
-			'name'  => 'Tres Hugart',
-			'dob'   => '1983-01-02 11:00:00',
-			'email' => 'test@test.com'
-		);
-	}
-
-	/**
-	 * Returns a simple data array for hydration.
-	 * 
-	 * There are multiple levels of relationships, so there are multiple
-	 * instantiations and hydrations happening for a single object that
-	 * this is passed to, given the relationships are set up.
-	 * 
-	 * @return array
-	 */
-	protected function complexdata()
-	{
-		return array_merge(
-			$this->simpledata(),
-			array(
-				'homepage' => array(
-					'user'    => md5(microtime()),
-					'title'   => 'My Personal Homepage!',
-					'content' => 'My content! Yay!'
-				),
-				'friends'  => array(
-					array(
-						'user'   => md5(microtime() + 1),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 2),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 3),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 4),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 5),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 6),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 7),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 8),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 9),
-						'status' => 1
-					),
-					array(
-						'user'   => md5(microtime() + 10),
-						'status' => 1
-					)
-				)
-			)
-		);
-	}
+    public function hydrate1000Times()
+    {
+        $user = array(
+            'id'      => 1,
+            'name'    => 'Trey Shugart',
+            'dob'     => '1983-01-02',
+            'created' => time(),
+            'updated' => time()
+        );
+        
+        $comments = array(
+            array(
+                'name'    => 'Trey Shugart',
+                'email'   => 'treshugart@gmail.com',
+                'subject' => 'Test Subject',
+                'body'    => 'Comment body.'
+            ),
+            array(
+                'name'    => 'Trey Shugart',
+                'email'   => 'treshugart@gmail.com',
+                'subject' => 'Test Subject',
+                'body'    => 'Comment body.'
+            ),
+            array(
+                'name'    => 'Trey Shugart',
+                'email'   => 'treshugart@gmail.com',
+                'subject' => 'Test Subject',
+                'body'    => 'Comment body.'
+            ),
+            array(
+                'name'    => 'Trey Shugart',
+                'email'   => 'treshugart@gmail.com',
+                'subject' => 'Test Subject',
+                'body'    => 'Comment body.'
+            ),
+            array(
+                'name'    => 'Trey Shugart',
+                'email'   => 'treshugart@gmail.com',
+                'subject' => 'Test Subject',
+                'body'    => 'Comment body.'
+            )
+        );
+        
+        for ($i = 0; $i < 1000; $i++) {
+            $this->set[] = new ContentEntity(array(
+                'id'       => 1,
+                'title'    => 'Content 1',
+                'created'  => time(),
+                'updated'  => time(),
+                'user'     => $user,
+                'comments' => $comments
+            ));
+        }
+    }
+    
+    public function exportHydrated()
+    {
+        $this->set->export();
+    }
 }

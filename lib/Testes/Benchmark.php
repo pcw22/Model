@@ -11,7 +11,7 @@
 class Testes_Benchmark extends Testes_Benchmark_Suite
 {
     /**
-     * Converts the benchmark result ot a string.
+     * Converts the benchmark result to a string.
      * 
      * @return string
      */
@@ -26,6 +26,8 @@ class Testes_Benchmark extends Testes_Benchmark_Suite
 
         if (!Testes_Output::isCli()) {
             $str .= '<pre>';
+        } else {
+            $str .= $br;
         }
 
         foreach ($this->results() as $suite => $benchmarks) {
@@ -33,7 +35,7 @@ class Testes_Benchmark extends Testes_Benchmark_Suite
         	foreach ($benchmarks as $benchmark => $result) {
         		$str .= $sp2 . $benchmark . $br
         		     .  $sp4 . 'memory' . $sp1 . ':' . $sp1 . round($result['memory'] / 1024 / 1024, 3) . ' MB' . $br
-        		     .  $sp4 . 'time' . $sp3 . ':' . $sp1 . round($result['time'], 3) . ' seconds' . $br;
+        		     .  $sp4 . 'time' . $sp3 . ':' . $sp1 . round($result['time'], 3) . ' seconds' . $br . $br;
         	}
         }
 

@@ -1,12 +1,17 @@
 <?php
 
+namespace Provider;
 use Model\Entity;
 
-class Provider_Content extends Entity
+class ContentEntity extends Entity
 {
     public $preConstruct = false;
     
     public $postConstruct = false;
+    
+    public $preSave = false;
+    
+    public $postSave = false;
     
     public $preInsert = false;
     
@@ -16,23 +21,30 @@ class Provider_Content extends Entity
     
     public $postUpdate = false;
     
-    public $preSave = false;
-    
-    public $postSave = false;
-    
     public $preRemove = false;
     
     public $postRemove = false;
     
     public function preConstruct()
     {
+        $this->hasOne('user', '\Provider\UserEntity');
+        $this->hasMany('comments', '\Provider\CommentEntity');
         $this->preConstruct = true;
-        $this->actAs(new Provider_Behavior_Content);
     }
     
     public function postConstruct()
     {
         $this->postConstruct = true;
+    }
+    
+    public function preSave()
+    {
+        $this->preSave = true;
+    }
+    
+    public function postSave()
+    {
+        $this->postSave = true;
     }
     
     public function preInsert()
@@ -53,16 +65,6 @@ class Provider_Content extends Entity
     public function postUpdate()
     {
         $this->postUpdate = true;
-    }
-        
-    public function preSave()
-    {
-        $this->preSave = true;
-    }
-    
-    public function postSave()
-    {
-        $this->postSave = true;
     }
     
     public function preRemove()
