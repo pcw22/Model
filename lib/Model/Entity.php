@@ -106,7 +106,7 @@ class Entity implements Accessible
             $this->data[$name] = new $class;
             return $this->data[$name];
         } elseif (isset($this->hasMany[$name])) {
-            $this->data[$name] = new EntitySet($this->hasMeny[$name]);
+            $this->data[$name] = new EntitySet($this->hasMany[$name]);
             return $this->data[$name];
         }
         

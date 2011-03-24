@@ -28,5 +28,11 @@ class Test_Entity extends Testes_UnitTest_Test
         $entity = new ContentEntity;
         $this->assert($entity->user instanceof UserEntity, 'User relationship was not instantiated.');
         $this->assert($entity->comments instanceof EntitySet, 'Comments relationship was not instantiated.');
+        
+        try {
+            $entity->comments->offsetSet(0, new CommentEntity);
+        } catch (\Exception $e) {
+            $this->assert(false, 'Entity could not be added to set.');
+        }
     }
 }
