@@ -16,7 +16,7 @@ Separating drivers that implement a common interface ensures maintainability whi
 Read and find out.
 
 Theory of Abstraction with a Sample Driver
-----------------------------------------
+------------------------------------------
 
 Say we want to use both MongoDb and Mysql as backends. These two databases are completely different in almost every respect. So how can we access these through a common interface?
 
